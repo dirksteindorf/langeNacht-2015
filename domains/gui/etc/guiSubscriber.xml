@@ -1,0 +1,9 @@
+<root>
+    <communication>
+		<Port>1234</Port>
+	</communication>
+	
+	<!--
+	<unit id="guiSubscriber" class="gui::guiSubscriber" />
+    -->
+</root>
