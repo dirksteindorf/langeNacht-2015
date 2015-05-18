@@ -33,9 +33,24 @@ MIRA_ADD_LIBRARY(guiSubscriber
 		MIRAFramework
 )
 
+###############################################################################
+
 MIRA_ADD_BINARY(sfmltest
     SOURCE
         src/sfmlTest.cc
+
+    LINK_LIBS
+        MIRAFramework
+        ${SFML_LIBRARIES}
+)
+
+
+###############################################################################
+
+MIRA_ADD_BINARY(sfml_gui
+    SOURCE
+        src/main.cpp
+        src/lndw_gui.cpp
 
     LINK_LIBS
         MIRAFramework
