@@ -10,7 +10,7 @@ namespace lndw
 		f_elf_pressed = false;
 		fullscreen_active = false;
 
-		addArea("LNdW 2015", sf::IntRect(115, 590, 159, 162), L"Zur Langen Nacht der Wissenschaft \n2015 präsentieren Ihnen die \nArbeitsgruppen ESS, IS und CSE \naktuelle Projekt aus dem Bereich \nder Robotik.", "res/white_square.png", "res/missing_fig_groß.png", false, true);
+		addArea("LNdW 2015", sf::IntRect(115, 580, 169, 182), L"Zur Langen Nacht der Wissenschaft \n2015 präsentieren Ihnen die \nArbeitsgruppen ESS, IS und CSE \naktuelle Projekt aus dem Bereich \nder Robotik.", "res/white_square.png", "res/missing_fig_groß.png", 7.8, 20.4, M_PI * 0.4, true, false);
 		
 		createStatics();
 
@@ -43,6 +43,10 @@ namespace lndw
 		karte.setScale(scale, scale);
 		std::cout << "\nScale: " << scale << "\n";
 		karte.setPosition(offset_karte.x, offset_karte.y);
+
+		bottom_line = sf::RectangleShape( sf::Vector2f(texture_karte.getSize().x * scale, offset_karte.y + 5) );
+		bottom_line.setFillColor(sf::Color(205, 205, 205));
+		bottom_line.setPosition(offset_karte.x, window.getSize().y - offset_karte.y - 5);
 
 		texture_fin.loadFromFile("res/inf_sign_web.png");
 		fin = sf::Sprite(texture_fin);
@@ -77,6 +81,8 @@ namespace lndw
 		goButton.color.setFillColor(sf::Color(29, 183, 40));
 		goButton.text = sf::Text(L"Fahr da hin.", font, 30);
 		goButton.text.setColor(sf::Color(0,0,0));
+		goButton.color.setOutlineColor(sf::Color(0,0,0));
+		goButton.color.setOutlineThickness(-2);
 		goButton.text.setPosition(goButton.area.left + (goButton.color.getSize().x - goButton.text.getGlobalBounds().width)/2, goButton.area.top + (goButton.color.getSize().y - goButton.text.getGlobalBounds().height)/2 - 5);
 		goButton.show = false;
 
@@ -84,11 +90,31 @@ namespace lndw
 		robot.circle.setFillColor(sf::Color(0,0,160));
 		robot.tail = sf::RectangleShape( sf::Vector2f(13*scale, 8*scale) );
 		robot.tail.setFillColor(sf::Color(0,0,160));
+		
+		target_arrow.setPointCount(7);
+		target_arrow.setPoint(0, sf::Vector2f(0, -3));
+		target_arrow.setPoint(1, sf::Vector2f(20, -3));
+		target_arrow.setPoint(2, sf::Vector2f(20, -6));
+		target_arrow.setPoint(3, sf::Vector2f(40, 0));
+		target_arrow.setPoint(4, sf::Vector2f(20, 6));
+		target_arrow.setPoint(5, sf::Vector2f(20, 3));
+		target_arrow.setPoint(6, sf::Vector2f(0, 3));
+		target_arrow.setFillColor(sf::Color(220,0,0));
+
+		setTargetPose(areas.begin()->target);
 
 		return 0;
 	}
 
-	int Gui::addArea(std::string name, sf::IntRect area, std::wstring text, std::string logo_pfad, std::string bild_pfad, bool showGoButton, bool debug){
+	int Gui::setTargetPose(pose2d target_pose) {
+		target = target_pose;
+		target_arrow.setPosition(target.x * 20.0 * scale + offset_karte.x, target.y * 20.0 * scale + offset_karte.y);
+		target_arrow.setRotation(target.theta * -180 /M_PI);
+
+		return 0;
+	}
+
+	int Gui::addArea(std::string name, sf::IntRect area, std::wstring text, std::string logo_pfad, std::string bild_pfad, float target_x, float target_y, float target_theta, bool debug, bool showGoButton){
 		poi newArea;
 		
 		newArea.area = area;
@@ -101,7 +127,11 @@ namespace lndw
 			newArea.border.setOutlineColor(sf::Color(0,0,0));
 			newArea.border.setOutlineThickness(-1);
 		}
+		
 		newArea.showGoButton = showGoButton;
+		newArea.target.x = target_x;
+		newArea.target.y = target_y;
+		newArea.target.theta = target_theta;
 		
 		newArea.name = name;
 		newArea.text = text;
@@ -129,7 +159,7 @@ namespace lndw
 	int Gui::update(bool debug) {
 		checkEvent();
 		checkMouse(debug);
-		draw();
+		draw(debug);
 
 		return 0;
 	}
@@ -144,13 +174,13 @@ namespace lndw
 			}
 		}
 
-		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Escape)) {
+		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Escape) && (window.hasFocus() || fullscreen_active) ) {
 			window.close();
 			exit(-1);
-		} else if (sf::Keyboard::isKeyPressed(sf::Keyboard::C))	{
+		} else if (sf::Keyboard::isKeyPressed(sf::Keyboard::C) && (window.hasFocus() || fullscreen_active) ) {
 			window.close();
 			exit(-1);
-		} else if (sf::Keyboard::isKeyPressed(sf::Keyboard::F11)) {
+		} else if (sf::Keyboard::isKeyPressed(sf::Keyboard::F11) && (window.hasFocus() || fullscreen_active) ) {
 			f_elf_pressed = true;
 		}
 
@@ -181,7 +211,7 @@ namespace lndw
 
 			for(std::vector<poi>::iterator it=areas.begin(); it != areas.end(); it++) {
 				if (it->area.contains(position)) {
-					std::cout << it->name << "\n";
+					if (debug) std::cout << it->name << "\n";
 					header.setString(it->name);
 					text.setString(it->text);
 
@@ -189,8 +219,9 @@ namespace lndw
 					temp_bereich.top = text.getGlobalBounds().top + text.getGlobalBounds().height + 10;
 					temp_bereich.height = fin.getPosition().y - temp_bereich.top - 10;
 
-					fitIn(bild_bereich, &(it->texture_bild), &bild);
+					fitIn(bild_bereich, &(it->texture_bild), &bild, debug);
 					goButton.show = it->showGoButton;
+					setTargetPose(it->target);
 				}
 			}
 
@@ -245,10 +276,9 @@ namespace lndw
 	}
 
 	int Gui::fitInLogo(sf::IntRect borders, sf::Texture *input, sf::Sprite *frame, bool debug){
-		int half_dy = borders.height /2;
-		int half_dx = borders.width /2;
+		float factor = 0.75;
 
-		borders = sf::IntRect(borders.left + half_dx/2, borders.top + half_dy/2, half_dx, half_dy);
+		borders = sf::IntRect(borders.left + borders.width * (1-factor)/2, borders.top + borders.height * (1-factor)/2, borders.width * factor, borders.height * factor);
 		if (debug) std::cout << "logo-bereich: l" << borders.left << " t" << borders.top << " w" << borders.width << " h" << borders.height << "\n";
 
 		fitIn(borders, input, frame, debug);
@@ -256,10 +286,11 @@ namespace lndw
 		return 0;
 	}
 
-	int Gui::draw(){
+	int Gui::draw(bool debug){
 		window.clear();
 		window.draw(background);
 		window.draw(karte);
+		window.draw(bottom_line);
 		for(std::vector<poi>::iterator it=areas.begin(); it != areas.end(); it++) {
 			window.draw(it->logo);
 			window.draw(it->border);
@@ -267,6 +298,8 @@ namespace lndw
 
 		window.draw(robot.circle);
 		window.draw(robot.tail);
+
+		if (debug) window.draw(target_arrow);
 		
 		if (goButton.show) {
 			window.draw(goButton.color);

@@ -11,7 +11,7 @@ Authority authority;
 mira::Channel<Pose2> poseChannel;
 mira::Channel<Pose2> goalChannel;
 
-lndw::Gui fenster(sf::VideoMode(1024, 768));//, sf::Style::Fullscreen);
+lndw::Gui fenster(sf::VideoMode(1024, 768), sf::VideoMode(1024, 768));
 
 
 void onNewPose(mira::ChannelRead<mira::Pose2> data)
@@ -23,7 +23,7 @@ void onNewPose(mira::ChannelRead<mira::Pose2> data)
 void updateGui(const Timer& timer)
 {
     if(fenster.isOpen()) {
-        fenster.update();
+        fenster.update(true);
     }
 }
 
@@ -32,11 +32,10 @@ int main(int argc, char** argv)
 {
     std::wstring counter = L"123456789 123456789 123456789 123456789 \n123456789 123456789 123456789 \n123456789 123456789 123456789 \n123456789 123456789 123456789 \n123456789 123456789 123456789 ";
 
-    fenster.addArea("oTToCAR", sf::IntRect(-12, 65, 121, 380), counter, "res/oTToCAR_Logo.png", "res/ottocar_CeBIT2015_03.jpg");
-    fenster.addArea("robOTTO", sf::IntRect(227, 174, 135, 407), counter, "res/logo-robotto.png", "res/robotto.png");
-    fenster.addArea("Finken Projekt", sf::IntRect(37, 1, 205, 63), counter, "res/red_logo.png", "res/finken.jpg");
-    fenster.addArea("AG CSE", sf::IntRect(11, 445, 137, 128), counter, "res/red_logo.png", "res/missing_fig_groß.png");
-
+    fenster.addArea("oTToCAR", sf::IntRect(5, 20, 192, 404), counter, "res/oTToCAR_Logo.png", "res/ottocar_CeBIT2015_03.jpg", 4.4, 10.4, M_PI * 0.25, true);
+    fenster.addArea("robOTTO", sf::IntRect(204, 128, 167, 244), counter, "res/logo-robotto.png", "res/robotto.png", 7.0, 10.3, M_PI * 0.75, true);
+    fenster.addArea("Finken Projekt", sf::IntRect(5, 436, 98, 142), counter, "res/red_logo.png", "res/finken.jpg", 3.5, 15.4, M_PI * 0.5, true);
+    fenster.addArea("AG CSE", sf::IntRect(271, 436, 98, 142), counter, "res/red_logo.png", "res/missing_fig_groß.png", 8.2, 15.5, M_PI * 0.5, true);
 
     Framework framework(argc, argv, true);
 
