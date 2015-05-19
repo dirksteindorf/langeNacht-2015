@@ -4,6 +4,7 @@
 #include <SFML/Graphics.hpp>
 #include <sstream>
 #include <iostream>
+#include <math.h>
 
 namespace lndw
 {
@@ -33,6 +34,20 @@ namespace lndw
 
 		button goButton;
 
+		struct pose2d {
+			float x;
+			float y;
+			float theta;
+		};
+
+		struct robot_struct {
+			pose2d pos;
+			sf::CircleShape circle;
+			sf::RectangleShape tail;
+		};
+
+		robot_struct robot;
+
 		struct poi {
 			sf::IntRect area;
 			std::string name;
@@ -49,16 +64,20 @@ namespace lndw
 		int fitIn(sf::IntRect borders, sf::Texture *input, sf::Sprite *frame, bool debug = false);
 		int fitInLogo(sf::IntRect borders, sf::Texture *input, sf::Sprite *frame, bool debug = false);
 
+		int checkEvent();
+		int checkMouse();
+		int draw();
+
 	public:
 		Gui(sf::VideoMode mode, unsigned int style = sf::Style::Close);
 		virtual ~Gui(){}
 		
 		int addArea(std::string name, sf::IntRect area, std::wstring text, std::string logo_pfad, std::string bild_pfad, bool showGoButton = true);
+		int setRobotPose(float x, float y, float theta);
 		bool isOpen();
+		int update();
 
-		int checkEvent();
-		int checkMouse();
-		int draw();
+		
 	};
 };
 #endif //LNDW_GUI_H_

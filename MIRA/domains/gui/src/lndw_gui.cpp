@@ -6,16 +6,36 @@ namespace lndw
 		offset_karte = sf::Vector2u(15,2);
 		mouseWasPressed=false;
 
-		addArea("LNdW 2015", sf::IntRect(115, 590, 159, 162), L"Zur Langen Nacht der Wissenschaft \n2015 präsentieren Ihnen die \nArbeitsgruppen ESS, IS und CSE \naktuelle Projekt aus dem Bereich \nder Robotik.", "../res/white_square.png", "../res/missing_fig_groß.png", false);
+		addArea("LNdW 2015", sf::IntRect(115, 590, 159, 162), L"Zur Langen Nacht der Wissenschaft \n2015 präsentieren Ihnen die \nArbeitsgruppen ESS, IS und CSE \naktuelle Projekt aus dem Bereich \nder Robotik.", "res/white_square.png", "res/missing_fig_groß.png", false);
 		
 		createStatics();
+
+		setRobotPose(248.0 * 0.05 / scale, 649.0 * 0.05 /scale, 0.0);
+	}
+
+	int Gui::setRobotPose(float x, float y, float theta) {
+		robot.pos.x = x * 20.0 * scale + offset_karte.x;
+		robot.pos.y = y * 20.0 * scale + offset_karte.y;
+		robot.pos.theta = theta;
+
+		//std::cout << "robotPose: x=" << x << " y=" << y << " theta=" << theta * 180 /M_PI << "°\n";
+
+		float r = robot.circle.getRadius();
+		float c = robot.tail.getSize().y * 0.5;
+		//double alpha = robot.pos.theta * 180 /M_PI;
+		
+		robot.circle.setPosition( robot.pos.x - r, robot.pos.y - r);
+		robot.tail.setPosition( robot.pos.x - c * cos(robot.pos.theta), robot.pos.y - c * sin(robot.pos.theta) );
+		robot.tail.setRotation((robot.pos.theta) * 180 /M_PI);
+
+		return 0;
 	}
 
 	int Gui::createStatics(){
 		background = sf::RectangleShape( sf::Vector2f(window.getSize().x, window.getSize().y) );
 		background.setFillColor(sf::Color(205, 205, 205));
 		
-		texture_karte.loadFromFile("../res/hoersaal.png");
+		texture_karte.loadFromFile("res/hoersaal.png");
 		karte = sf::Sprite(texture_karte);
 
 		scale=((float)window.getSize().y)/480.0;
@@ -23,7 +43,7 @@ namespace lndw
 		std::cout << "\nScale: " << scale << "\n";
 		karte.setPosition(offset_karte.x, offset_karte.y);
 
-		texture_fin.loadFromFile("../res/inf_sign_web.png");
+		texture_fin.loadFromFile("res/inf_sign_web.png");
 		fin = sf::Sprite(texture_fin);
 
 		float fin_scale=70.0/((float)texture_fin.getSize().y);
@@ -31,7 +51,9 @@ namespace lndw
 		fin.setPosition(window.getSize().x - 10 - texture_fin.getSize().x * fin_scale, window.getSize().y - 2 - texture_fin.getSize().y * fin_scale);//offset_karte.x + 310, offset_karte.y + 600);
 
 		int left_border = (int)(texture_karte.getSize().x*scale) + offset_karte.x + 10;
-		font.loadFromFile("/usr/share/fonts/truetype/dejavu/DejaVuSansMono.ttf");
+		if ( !font.loadFromFile("/usr/share/fonts/truetype/dejavu/DejaVuSansMono.ttf") ) {
+			font.loadFromFile("/usr/share/fonts/truetype/ttf-dejavu/DejaVuSansMono.ttf");
+		}
 
 		header = sf::Text(areas.begin()->name, font, 70);
 		header.setPosition(left_border, 10);
@@ -56,6 +78,11 @@ namespace lndw
 		goButton.text.setColor(sf::Color(0,0,0));
 		goButton.text.setPosition(goButton.area.left + (goButton.color.getSize().x - goButton.text.getGlobalBounds().width)/2, goButton.area.top + (goButton.color.getSize().y - goButton.text.getGlobalBounds().height)/2 - 5);
 		goButton.show = false;
+
+		robot.circle = sf::CircleShape(10*scale);
+		robot.circle.setFillColor(sf::Color(0,0,160));
+		robot.tail = sf::RectangleShape( sf::Vector2f(8*scale, 10*scale) );
+		robot.tail.setFillColor(sf::Color(0,0,160));
 
 		return 0;
 	}
@@ -91,13 +118,33 @@ namespace lndw
 		return window.isOpen();
 	}
 
+	int Gui::update() {
+		checkEvent();
+		checkMouse();
+		draw();
+
+		return 0;
+	}
+
 	int Gui::checkEvent(){
 		sf::Event event;
 		while (window.pollEvent(event))
 		{
-		    if (event.type == sf::Event::Closed)
-			window.close();
+			if (event.type == sf::Event::Closed)
+				window.close();
 		}
+
+		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Escape)) {
+			window.close();
+			//exit(-1);
+		} else if (sf::Keyboard::isKeyPressed(sf::Keyboard::C))	{
+			window.close();
+			//exit(-1);
+		} else if (sf::Keyboard::isKeyPressed(sf::Keyboard::F11))	{
+			//sfmlChannel.post(bye);
+			//Fullscreen umschalten?
+		}
+			
 		return 0;
 	}
 
@@ -137,6 +184,12 @@ namespace lndw
 		std::ostringstream out;
 		out << "LNdW 2015 Demo (x=" << position.x << "; y=" << position.y << ")";
 		window.setTitle(out.str());
+
+		float new_x = (position.x - offset_karte.x) * 0.05 /scale;
+		float new_y = (position.y - offset_karte.y) * 0.05 /scale;
+		float old_x = (robot.pos.x - offset_karte.x) * 0.05 /scale;
+		float old_y = (robot.pos.y - offset_karte.y) * 0.05 /scale;
+		setRobotPose( new_x, new_y, (new_x == old_x && new_y == old_y) ? robot.pos.theta : atan2(new_x - old_x, new_y - old_y));//double alpha = (theta-180) * M_PI / 180;
 		
 		return 0;
 	}
@@ -189,6 +242,10 @@ namespace lndw
 		for(std::vector<poi>::iterator it=areas.begin(); it != areas.end(); it++) {
 			window.draw(it->logo);
 		}
+
+		window.draw(robot.circle);
+		//window.draw(robot.tail);
+		
 		if (goButton.show) {
 			window.draw(goButton.color);
 			window.draw(goButton.text);
