@@ -2,11 +2,15 @@
 
 namespace lndw
 {
-	Gui::Gui(sf::VideoMode mode, unsigned int style):window(mode, "LNdW 2015 Demo", style){
+	Gui::Gui(sf::VideoMode mode, sf::VideoMode fullscreen_mode):window(mode, "LNdW 2015 Demo", sf::Style::Close){
 		offset_karte = sf::Vector2u(15,2);
 		mouseWasPressed=false;
+		window_mode = mode;
+		this->fullscreen_mode = fullscreen_mode;
+		f_elf_pressed = false;
+		fullscreen_active = false;
 
-		addArea("LNdW 2015", sf::IntRect(115, 590, 159, 162), L"Zur Langen Nacht der Wissenschaft \n2015 präsentieren Ihnen die \nArbeitsgruppen ESS, IS und CSE \naktuelle Projekt aus dem Bereich \nder Robotik.", "res/white_square.png", "res/missing_fig_groß.png", false);
+		addArea("LNdW 2015", sf::IntRect(115, 590, 159, 162), L"Zur Langen Nacht der Wissenschaft \n2015 präsentieren Ihnen die \nArbeitsgruppen ESS, IS und CSE \naktuelle Projekt aus dem Bereich \nder Robotik.", "res/white_square.png", "res/missing_fig_groß.png", false, true);
 		
 		createStatics();
 
@@ -17,16 +21,13 @@ namespace lndw
 		robot.pos.x = x * 20.0 * scale + offset_karte.x;
 		robot.pos.y = y * 20.0 * scale + offset_karte.y;
 		robot.pos.theta = theta;
-
 		//std::cout << "robotPose: x=" << x << " y=" << y << " theta=" << theta * 180 /M_PI << "°\n";
 
 		float r = robot.circle.getRadius();
-		float c = robot.tail.getSize().y * 0.5;
-		//double alpha = robot.pos.theta * 180 /M_PI;
-		
+		float c = robot.tail.getSize().y * 0.5;				
 		robot.circle.setPosition( robot.pos.x - r, robot.pos.y - r);
-		robot.tail.setPosition( robot.pos.x - c * cos(robot.pos.theta), robot.pos.y - c * sin(robot.pos.theta) );
-		robot.tail.setRotation((robot.pos.theta) * 180 /M_PI);
+		robot.tail.setPosition( robot.pos.x + c * sin(robot.pos.theta), robot.pos.y + c * cos(robot.pos.theta) );
+		robot.tail.setRotation((robot.pos.theta + M_PI) * -180 /M_PI);
 
 		return 0;
 	}
@@ -81,18 +82,25 @@ namespace lndw
 
 		robot.circle = sf::CircleShape(10*scale);
 		robot.circle.setFillColor(sf::Color(0,0,160));
-		robot.tail = sf::RectangleShape( sf::Vector2f(8*scale, 10*scale) );
+		robot.tail = sf::RectangleShape( sf::Vector2f(13*scale, 8*scale) );
 		robot.tail.setFillColor(sf::Color(0,0,160));
 
 		return 0;
 	}
 
-	int Gui::addArea(std::string name, sf::IntRect area, std::wstring text, std::string logo_pfad, std::string bild_pfad, bool showGoButton){
+	int Gui::addArea(std::string name, sf::IntRect area, std::wstring text, std::string logo_pfad, std::string bild_pfad, bool showGoButton, bool debug){
 		poi newArea;
 		
 		newArea.area = area;
 		newArea.area.left = newArea.area.left + offset_karte.x;
 		newArea.area.top = newArea.area.top + offset_karte.y;
+		if (debug) {
+			newArea.border = sf::RectangleShape( sf::Vector2f(newArea.area.width, newArea.area.height) );
+			newArea.border.setPosition(newArea.area.left, newArea.area.top);
+			newArea.border.setFillColor(sf::Color(0,0,0,0));
+			newArea.border.setOutlineColor(sf::Color(0,0,0));
+			newArea.border.setOutlineThickness(-1);
+		}
 		newArea.showGoButton = showGoButton;
 		
 		newArea.name = name;
@@ -104,8 +112,8 @@ namespace lndw
 
 		areas.push_back(newArea);
 		
-		std::cout << "Logo " << name << ":\n";
-		fitInLogo(area, &areas.back().texture_logo, &areas.back().logo, true);
+		if (debug) std::cout << "Logo " << name << ":\n";
+		fitInLogo(area, &areas.back().texture_logo, &areas.back().logo, debug);
 
 		for(std::vector<poi>::iterator it=areas.begin(); it != areas.end()--; it++) {
 			fitInLogo(it->area, &(it->texture_logo), &(it->logo));
@@ -118,9 +126,9 @@ namespace lndw
 		return window.isOpen();
 	}
 
-	int Gui::update() {
+	int Gui::update(bool debug) {
 		checkEvent();
-		checkMouse();
+		checkMouse(debug);
 		draw();
 
 		return 0;
@@ -130,35 +138,46 @@ namespace lndw
 		sf::Event event;
 		while (window.pollEvent(event))
 		{
-			if (event.type == sf::Event::Closed)
+			if (event.type == sf::Event::Closed) {
 				window.close();
+				exit(-1);
+			}
 		}
 
 		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Escape)) {
 			window.close();
-			//exit(-1);
+			exit(-1);
 		} else if (sf::Keyboard::isKeyPressed(sf::Keyboard::C))	{
 			window.close();
-			//exit(-1);
-		} else if (sf::Keyboard::isKeyPressed(sf::Keyboard::F11))	{
-			//sfmlChannel.post(bye);
-			//Fullscreen umschalten?
+			exit(-1);
+		} else if (sf::Keyboard::isKeyPressed(sf::Keyboard::F11)) {
+			f_elf_pressed = true;
+		}
+
+		if ( !sf::Keyboard::isKeyPressed(sf::Keyboard::F11) && f_elf_pressed) {
+			f_elf_pressed = false;
+			if (fullscreen_active) {
+				window.create(window_mode, "LNdW 2015 Demo", sf::Style::Close );
+			} else {//window_mode
+				window.create(fullscreen_mode, "LNdW 2015 Demo", sf::Style::Fullscreen );
+			}
+			fullscreen_active = !fullscreen_active;
 		}
 			
 		return 0;
 	}
 
-	int Gui::checkMouse(){
-		if (sf::Mouse::isButtonPressed(sf::Mouse::Left) && window.hasFocus())
+	int Gui::checkMouse(bool debug){
+		if (sf::Mouse::isButtonPressed(sf::Mouse::Left) && (window.hasFocus() || fullscreen_active) )
 		{
 		    mouseWasPressed = true;
 		}
-		if (!sf::Mouse::isButtonPressed(sf::Mouse::Left) && window.hasFocus() && mouseWasPressed)
+		if (!sf::Mouse::isButtonPressed(sf::Mouse::Left) && mouseWasPressed && (window.hasFocus() || fullscreen_active) )
 		{//mousebutton released
 		    mouseWasPressed = false;
 		    sf::Vector2i position = sf::Mouse::getPosition(window);
 
-		    std::cout << "Pos: x=" << position.x << " y=" << position.y << "\n";
+		    if (debug) std::cout << "Pos: x=" << position.x << " y=" << position.y << "\n";
 
 			for(std::vector<poi>::iterator it=areas.begin(); it != areas.end(); it++) {
 				if (it->area.contains(position)) {
@@ -185,11 +204,13 @@ namespace lndw
 		out << "LNdW 2015 Demo (x=" << position.x << "; y=" << position.y << ")";
 		window.setTitle(out.str());
 
-		float new_x = (position.x - offset_karte.x) * 0.05 /scale;
-		float new_y = (position.y - offset_karte.y) * 0.05 /scale;
-		float old_x = (robot.pos.x - offset_karte.x) * 0.05 /scale;
-		float old_y = (robot.pos.y - offset_karte.y) * 0.05 /scale;
-		setRobotPose( new_x, new_y, (new_x == old_x && new_y == old_y) ? robot.pos.theta : atan2(new_x - old_x, new_y - old_y));//double alpha = (theta-180) * M_PI / 180;
+		if (debug) {
+			float new_x = (position.x - offset_karte.x) * 0.05 /scale;
+			float new_y = (position.y - offset_karte.y) * 0.05 /scale;
+			float old_x = (robot.pos.x - offset_karte.x) * 0.05 /scale;
+			float old_y = (robot.pos.y - offset_karte.y) * 0.05 /scale;
+			setRobotPose( new_x, new_y, (new_x == old_x && new_y == old_y) ? robot.pos.theta : atan2(old_y - new_y, new_x - old_x));//-M_PI/2);//
+		}
 		
 		return 0;
 	}
@@ -241,10 +262,11 @@ namespace lndw
 		window.draw(karte);
 		for(std::vector<poi>::iterator it=areas.begin(); it != areas.end(); it++) {
 			window.draw(it->logo);
+			window.draw(it->border);
 		}
 
 		window.draw(robot.circle);
-		//window.draw(robot.tail);
+		window.draw(robot.tail);
 		
 		if (goButton.show) {
 			window.draw(goButton.color);

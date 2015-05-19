@@ -11,6 +11,9 @@ namespace lndw
 	class Gui
 	{
 		sf::RenderWindow window;
+		sf::VideoMode window_mode;
+		sf::VideoMode fullscreen_mode;
+		bool fullscreen_active;
 		sf::RectangleShape background;
 		sf::Texture texture_karte;
 		sf::Sprite karte;
@@ -24,6 +27,7 @@ namespace lndw
 		sf::Text header;
 		sf::Text text;
 		bool mouseWasPressed;
+		bool f_elf_pressed;
 
 		struct button {
 			sf::IntRect area;
@@ -50,6 +54,7 @@ namespace lndw
 
 		struct poi {
 			sf::IntRect area;
+			sf::RectangleShape border;
 			std::string name;
 			std::wstring text;
 			sf::Texture texture_logo;
@@ -65,17 +70,17 @@ namespace lndw
 		int fitInLogo(sf::IntRect borders, sf::Texture *input, sf::Sprite *frame, bool debug = false);
 
 		int checkEvent();
-		int checkMouse();
+		int checkMouse(bool debug = false);
 		int draw();
 
 	public:
-		Gui(sf::VideoMode mode, unsigned int style = sf::Style::Close);
+		Gui(sf::VideoMode mode, sf::VideoMode fullscreen_mode = sf::VideoMode(1366, 768) );
 		virtual ~Gui(){}
 		
-		int addArea(std::string name, sf::IntRect area, std::wstring text, std::string logo_pfad, std::string bild_pfad, bool showGoButton = true);
+		int addArea(std::string name, sf::IntRect area, std::wstring text, std::string logo_pfad, std::string bild_pfad, bool showGoButton = true, bool debug = false);
 		int setRobotPose(float x, float y, float theta);
 		bool isOpen();
-		int update();
+		int update(bool debug = true);
 
 		
 	};
