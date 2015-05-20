@@ -238,7 +238,7 @@ namespace lndw
 		out << "LNdW 2015 Demo (x=" << position.x << "; y=" << position.y << ")";
 		window.setTitle(out.str());
 
-		if (debug) {
+		if (false) {
 			float new_x = (position.x - offset_karte.x) * 0.05 /scale;
 			float new_y = (position.y - offset_karte.y) * 0.05 /scale;
 			float old_x = (robot.pos.x - offset_karte.x) * 0.05 /scale;

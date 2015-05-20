@@ -4,6 +4,8 @@
 #include <fw/ChannelReadWrite.h>
 #include <transform/Pose.h>
 
+#include <iostream>
+
 using namespace mira;
 
 Authority authority;
@@ -17,7 +19,8 @@ lndw::Gui fenster(sf::VideoMode(1024, 768), sf::VideoMode(1024, 768));
 void onNewPose(mira::ChannelRead<mira::Pose2> data)
 {
    mira::Pose2 pose = data->value();
-   fenster.setRobotPose(pose.x(), pose.y(), pose.phi());  
+   fenster.setRobotPose(pose.x(), -pose.y(), pose.phi());  
+   std::cout<<pose.x() << " " << pose.y() << " " <<pose.phi()<<std::endl;
 }
 
 void updateGui(const Timer& timer)
@@ -30,7 +33,7 @@ void updateGui(const Timer& timer)
 void publishPose()
 {
     goalChannel.post(mira::Pose2(   fenster.target.x, 
-                                    fenster.target.y, 
+                                    -fenster.target.y, 
                                     fenster.target.theta));
 }
 
@@ -48,7 +51,7 @@ int main(int argc, char** argv)
 
     authority.checkin("/", "guiAuthority");
     authority.createTimer(Duration::milliseconds(50), &updateGui);
-    authority.subscribe<mira::Pose2>("/robot/Odometry", &onNewPose);
+    authority.subscribe<mira::Pose2>("/robot/RobotFrame", &onNewPose);
 
     goalChannel = authority.publish<mira::Pose2>("goalChannel");
 
