@@ -1,5 +1,7 @@
 #include "lndw_gui.hpp"
 
+extern void publishPose();
+
 namespace lndw
 {
 	Gui::Gui(sf::VideoMode mode, sf::VideoMode fullscreen_mode):window(mode, "LNdW 2015 Demo", sf::Style::Close){
@@ -227,6 +229,7 @@ namespace lndw
 
 			if (goButton.area.contains(position) && goButton.show) {
 				std::cout << "Ich Fahr dann mal los.\n";
+                publishPose();
 			}
 		}
 		

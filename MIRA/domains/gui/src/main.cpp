@@ -27,6 +27,13 @@ void updateGui(const Timer& timer)
     }
 }
 
+void publishPose()
+{
+    goalChannel.post(mira::Pose2(   fenster.target.x, 
+                                    fenster.target.y, 
+                                    fenster.target.theta));
+}
+
 
 int main(int argc, char** argv)
 {
@@ -42,6 +49,8 @@ int main(int argc, char** argv)
     authority.checkin("/", "guiAuthority");
     authority.createTimer(Duration::milliseconds(50), &updateGui);
     authority.subscribe<mira::Pose2>("/robot/Odometry", &onNewPose);
+
+    goalChannel = authority.publish<mira::Pose2>("goalChannel");
 
     authority.start();
 

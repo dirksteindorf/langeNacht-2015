@@ -56,3 +56,16 @@ MIRA_ADD_BINARY(sfml_gui
         MIRAFramework
         ${SFML_LIBRARIES}
 )
+
+###############################################################################
+
+MIRA_ADD_LIBRARY(GoalSetter
+	SHARED
+	#PACKAGE $PACKAGE$
+	SOURCE
+		src/GoalSetter.C
+
+	LINK_LIBS
+		MIRABase
+		MIRAFramework
+)
