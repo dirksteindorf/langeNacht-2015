@@ -4,8 +4,8 @@
     <Image>map-static.png</Image>
     <CellSize>0.050000</CellSize>
     <Offset>
-      <X>155</X>
-      <Y>400</Y>
+      <X>0</X>
+      <Y>0</Y>
     </Offset>
   </Map>
 </root>

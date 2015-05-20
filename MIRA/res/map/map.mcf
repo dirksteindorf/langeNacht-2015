@@ -25,8 +25,8 @@
         <ReferencePoints>
           <item>
             <Pose>
-              <X>0</X>
-              <Y>0</Y>
+              <X>0</X> <!-- 155 -->
+              <Y>0</Y> <!-- 400 -->
               <Phi>0</Phi>
             </Pose>
             <Name>Initial position</Name>
