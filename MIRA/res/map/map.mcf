@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root>
+  <MapConfigurationFile version="2">
+    <Maps>
+      <key>map</key>
+      <item version="2">
+        <MapName>map</MapName>
+        <StaticMap>map-static.xml</StaticMap>
+        <NogoMap/>
+        <SpeedMap/>
+        <OnewayMap/>
+        <NoGoAreas>
+          <RectAreas/>
+          <PolygonAreas/>
+          <EllipseAreas/>
+        </NoGoAreas>
+        <SpeedAreas>
+          <RectAreas/>
+          <PolygonAreas/>
+          <EllipseAreas/>
+        </SpeedAreas>
+        <OnewayAreas>
+          <RectAreas/>
+        </OnewayAreas>
+        <ReferencePoints>
+          <item>
+            <Pose>
+              <X>0</X>
+              <Y>0</Y>
+              <Phi>0</Phi>
+            </Pose>
+            <Name>Initial position</Name>
+          </item>
+        </ReferencePoints>
+        <Offset>
+          <X>0</X>
+          <Y>0</Y>
+          <Phi>0</Phi>
+        </Offset>
+      </item>
+    </Maps>
+  </MapConfigurationFile>
+</root>
