@@ -12,11 +12,11 @@ namespace lndw
 		f_elf_pressed = false;
 		fullscreen_active = false;
 
-		addArea("LNdW 2015", sf::IntRect(115, 580, 169, 182), L"Zur Langen Nacht der Wissenschaft \n2015 präsentieren Ihnen die \nArbeitsgruppen ESS, IS und CSE \naktuelle Projekt aus dem Bereich \nder Robotik.", "res/white_square.png", "res/missing_fig_groß.png", 7.8, 20.4, M_PI * 0.4, true, true);
+		addArea("LNdW 2015", sf::IntRect(115, 580, 169, 182), L"Zur Langen Nacht der Wissenschaft \n2015 präsentieren Ihnen die \nArbeitsgruppen ESS, IS und CSE \naktuelle Projekt aus dem Bereich \nder Robotik.", "res/white_square.png", "res/missing_fig_groß.png", 7.8, 20.4, M_PI * 0.4, false, true);
 		
 		createStatics();
 
-		setRobotPose(248.0 * 0.05 / scale, 649.0 * 0.05 /scale, 0.0);
+		setRobotPose(7.8, 20.4, M_PI * 0.4);
 	}
 
 	int Gui::setRobotPose(float x, float y, float theta) {
@@ -71,7 +71,7 @@ namespace lndw
 		text.setColor(sf::Color(0,0,0));
 
 		int top_border = text.getGlobalBounds().top + text.getGlobalBounds().height + 10;
-		bild_bereich = sf::IntRect(left_border, top_border, window.getSize().x - left_border - 20, fin.getPosition().y - top_border - 10);
+		bild_bereich = sf::IntRect(left_border, top_border, window.getSize().x - left_border - 20, fin.getPosition().y - top_border - 25);
 		std::cout << "bildbereich: l" << bild_bereich.left << " t" << bild_bereich.top << " w" << bild_bereich.width << " h" << bild_bereich.height << "\n";
 
 		bild = sf::Sprite();
@@ -116,19 +116,17 @@ namespace lndw
 		return 0;
 	}
 
-	int Gui::addArea(std::string name, sf::IntRect area, std::wstring text, std::string logo_pfad, std::string bild_pfad, float target_x, float target_y, float target_theta, bool debug, bool showGoButton){
+	int Gui::addArea(std::string name, sf::IntRect area, std::wstring text, std::string logo_pfad, std::string bild_pfad, float target_x, float target_y, float target_theta, bool debugMsg, bool showGoButton){
 		poi newArea;
 		
 		newArea.area = area;
 		newArea.area.left = newArea.area.left + offset_karte.x;
 		newArea.area.top = newArea.area.top + offset_karte.y;
-		if (debug) {
-			newArea.border = sf::RectangleShape( sf::Vector2f(newArea.area.width, newArea.area.height) );
-			newArea.border.setPosition(newArea.area.left, newArea.area.top);
-			newArea.border.setFillColor(sf::Color(0,0,0,0));
-			newArea.border.setOutlineColor(sf::Color(0,0,0));
-			newArea.border.setOutlineThickness(-1);
-		}
+		newArea.border = sf::RectangleShape( sf::Vector2f(newArea.area.width, newArea.area.height) );
+		newArea.border.setPosition(newArea.area.left, newArea.area.top);
+		newArea.border.setFillColor(sf::Color(0,0,0,0));
+		newArea.border.setOutlineColor(sf::Color(0,0,0));
+		newArea.border.setOutlineThickness(-1);
 		
 		newArea.showGoButton = showGoButton;
 		newArea.target.x = target_x;
@@ -144,8 +142,8 @@ namespace lndw
 
 		areas.push_back(newArea);
 		
-		if (debug) std::cout << "Logo " << name << ":\n";
-		fitInLogo(area, &areas.back().texture_logo, &areas.back().logo, debug);
+		if (debugMsg) std::cout << "Logo " << name << ":\n";
+		fitInLogo(area, &areas.back().texture_logo, &areas.back().logo, debugMsg);
 
 		for(std::vector<poi>::iterator it=areas.begin(); it != areas.end()--; it++) {
 			fitInLogo(it->area, &(it->texture_logo), &(it->logo));
@@ -158,10 +156,10 @@ namespace lndw
 		return window.isOpen();
 	}
 
-	int Gui::update(bool debug) {
+	int Gui::update(bool drawTargetArrowAndBorder, bool robotFollowsMouse, bool debugMsg) {
 		checkEvent();
-		checkMouse(debug);
-		draw(debug);
+		checkMouse(robotFollowsMouse, debugMsg);
+		draw(drawTargetArrowAndBorder);
 
 		return 0;
 	}
@@ -199,7 +197,7 @@ namespace lndw
 		return 0;
 	}
 
-	int Gui::checkMouse(bool debug){
+	int Gui::checkMouse(bool robotFollowsMouse, bool debugMsg){
 		if (sf::Mouse::isButtonPressed(sf::Mouse::Left) && (window.hasFocus() || fullscreen_active) )
 		{
 		    mouseWasPressed = true;
@@ -209,11 +207,11 @@ namespace lndw
 		    mouseWasPressed = false;
 		    sf::Vector2i position = sf::Mouse::getPosition(window);
 
-		    if (debug) std::cout << "Pos: x=" << position.x << " y=" << position.y << "\n";
+		    if (debugMsg) std::cout << "Pos: x=" << position.x << " y=" << position.y << "\n";
 
 			for(std::vector<poi>::iterator it=areas.begin(); it != areas.end(); it++) {
 				if (it->area.contains(position)) {
-					if (debug) std::cout << it->name << "\n";
+					if (debugMsg) std::cout << it->name << "\n";
 					header.setString(it->name);
 					text.setString(it->text);
 
@@ -221,24 +219,24 @@ namespace lndw
 					temp_bereich.top = text.getGlobalBounds().top + text.getGlobalBounds().height + 10;
 					temp_bereich.height = fin.getPosition().y - temp_bereich.top - 10;
 
-					fitIn(bild_bereich, &(it->texture_bild), &bild, debug);
+					fitIn(bild_bereich, &(it->texture_bild), &bild, debugMsg);
 					goButton.show = it->showGoButton;
 					setTargetPose(it->target);
 				}
 			}
 
 			if (goButton.area.contains(position) && goButton.show) {
-				std::cout << "Ich Fahr dann mal los.\n";
-                publishPose();
+				if (debugMsg) std::cout << "Ich Fahr dann mal los.\n";
+				publishPose();
 			}
 		}
 		
 		sf::Vector2i position = sf::Mouse::getPosition(window);
 		std::ostringstream out;
-		out << "LNdW 2015 Demo (x=" << position.x << "; y=" << position.y << ")";
+		out << "LNdW 2015 Demo [x=" << position.x << " (" << (position.x - offset_karte.x) * 0.05 / scale << "m); y=" << position.y << " (" << (position.y - offset_karte.y) * 0.05 / scale << "m)]";
 		window.setTitle(out.str());
 
-		if (false) {
+		if (robotFollowsMouse) {
 			float new_x = (position.x - offset_karte.x) * 0.05 /scale;
 			float new_y = (position.y - offset_karte.y) * 0.05 /scale;
 			float old_x = (robot.pos.x - offset_karte.x) * 0.05 /scale;
@@ -249,12 +247,12 @@ namespace lndw
 		return 0;
 	}
 
-	int Gui::fitIn(sf::IntRect borders, sf::Texture *input, sf::Sprite *frame, bool debug){
+	int Gui::fitIn(sf::IntRect borders, sf::Texture *input, sf::Sprite *frame, bool debugMsg){
 		sf::Vector2u size = input->getSize();
 		float scale_x = (float)borders.width / (float)size.x;
 		float scale_y = (float)borders.height / (float)size.y;
 
-		if (debug) std::cout << "scale_x: " << scale_x << " scale_y: " << scale_y << "\n";
+		if (debugMsg) std::cout << "scale_x: " << scale_x << " scale_y: " << scale_y << "\n";
 
 		sf::Vector2f position;
 		float scale;
@@ -269,7 +267,7 @@ namespace lndw
 			scale = scale_y;
 		}
 
-		if (debug) std::cout << "scale: " << scale << " pos_x: " << position.x << " pos_y: " << position.y << "\n";
+		if (debugMsg) std::cout << "scale: " << scale << " pos_x: " << position.x << " pos_y: " << position.y << "\n";
 
 		frame->setPosition(position);
 		frame->setScale(scale, scale);
@@ -278,31 +276,31 @@ namespace lndw
 		return 0;
 	}
 
-	int Gui::fitInLogo(sf::IntRect borders, sf::Texture *input, sf::Sprite *frame, bool debug){
+	int Gui::fitInLogo(sf::IntRect borders, sf::Texture *input, sf::Sprite *frame, bool debugMsg){
 		float factor = 0.75;
 
 		borders = sf::IntRect(borders.left + borders.width * (1-factor)/2, borders.top + borders.height * (1-factor)/2, borders.width * factor, borders.height * factor);
-		if (debug) std::cout << "logo-bereich: l" << borders.left << " t" << borders.top << " w" << borders.width << " h" << borders.height << "\n";
+		if (debugMsg) std::cout << "logo-bereich: l" << borders.left << " t" << borders.top << " w" << borders.width << " h" << borders.height << "\n";
 
-		fitIn(borders, input, frame, debug);
+		fitIn(borders, input, frame, debugMsg);
 
 		return 0;
 	}
 
-	int Gui::draw(bool debug){
+	int Gui::draw(bool showTarget){
 		window.clear();
 		window.draw(background);
 		window.draw(karte);
 		window.draw(bottom_line);
 		for(std::vector<poi>::iterator it=areas.begin(); it != areas.end(); it++) {
 			window.draw(it->logo);
-			window.draw(it->border);
+			if (showTarget) window.draw(it->border);
 		}
 
 		window.draw(robot.circle);
 		window.draw(robot.tail);
 
-		if (debug) window.draw(target_arrow);
+		if (showTarget) window.draw(target_arrow);
 		
 		if (goButton.show) {
 			window.draw(goButton.color);

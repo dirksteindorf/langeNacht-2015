@@ -15,6 +15,7 @@ mira::Channel<Pose2> goalChannel;
 
 lndw::Gui fenster(sf::VideoMode(1024, 768), sf::VideoMode(1024, 768));
 
+bool debugMsg = false;
 
 void onNewPose(mira::ChannelRead<mira::Pose2> data)
 {
@@ -27,8 +28,11 @@ void onNewPose(mira::ChannelRead<mira::Pose2> data)
 
 void updateGui(const Timer& timer)
 {
+    bool drawTargetArrowAndBorder = true;
+    bool robotFollowsMouse = false;
+    
     if(fenster.isOpen()) {
-        fenster.update(true);
+        fenster.update(drawTargetArrowAndBorder, robotFollowsMouse, debugMsg);
     }
 }
 
@@ -43,11 +47,12 @@ void publishPose()
 int main(int argc, char** argv)
 {
     std::wstring counter = L"123456789 123456789 123456789 123456789 \n123456789 123456789 123456789 \n123456789 123456789 123456789 \n123456789 123456789 123456789 \n123456789 123456789 123456789 ";
+    //main-image: ca. 596 x 400 px
 
-    fenster.addArea("oTToCAR", sf::IntRect(5, 20, 192, 404), counter, "res/oTToCAR_Logo.png", "res/ottocar_CeBIT2015_03.jpg", 4.4, 10.4, M_PI * 0.25, true);
-    fenster.addArea("robOTTO", sf::IntRect(204, 128, 167, 244), counter, "res/logo-robotto.png", "res/robotto.png", 7.0, 10.3, M_PI * 0.75, true);
-    fenster.addArea("Finken Projekt", sf::IntRect(5, 436, 98, 142), counter, "res/red_logo.png", "res/finken.jpg", 3.5, 15.4, M_PI * 0.5, true);
-    fenster.addArea("AG CSE", sf::IntRect(271, 436, 98, 142), counter, "res/red_logo.png", "res/missing_fig_groß.png", 8.2, 15.5, M_PI * 0.5, true);
+    fenster.addArea("oTToCAR", sf::IntRect(200, 15, 170, 370), counter, "res/oTToCAR_Logo.png", "res/ottocar_CeBIT2015_03.jpg", 8.0, 10.4, M_PI * 0.6, debugMsg);
+    fenster.addArea("robOTTO", sf::IntRect(10, 255, 120, 320), counter, "res/logo-robotto.png", "res/robotto.png", 4.4, 13.0, M_PI * 0.55, debugMsg);
+    fenster.addArea("Finken Projekt", sf::IntRect(10, 130, 100, 124), counter, "res/finken-logo.png", "res/finken.png", 6.0, 15.1, M_PI * 0.75, debugMsg);   //demo_pose im Gang; org_pose: 3.6, 5.4, M_PI * 0.55
+    fenster.addArea("AG CSE", sf::IntRect(250, 436, 120, 142), counter, "res/red_logo.png", "res/missing_fig_groß.png", 7.7, 14.7, M_PI * 0.45, debugMsg);
 
     Framework framework(argc, argv, true);
 

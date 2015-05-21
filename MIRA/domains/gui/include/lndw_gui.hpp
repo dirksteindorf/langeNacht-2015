@@ -69,12 +69,12 @@ namespace lndw
 
 		int createStatics();
 		int setTargetPose(pose2d target_pose);
-		int fitIn(sf::IntRect borders, sf::Texture *input, sf::Sprite *frame, bool debug = false);
-		int fitInLogo(sf::IntRect borders, sf::Texture *input, sf::Sprite *frame, bool debug = false);
+		int fitIn(sf::IntRect borders, sf::Texture *input, sf::Sprite *frame, bool debugMsg = false);
+		int fitInLogo(sf::IntRect borders, sf::Texture *input, sf::Sprite *frame, bool debugMsg = false);
 
 		int checkEvent();
-		int checkMouse(bool debug = false);
-		int draw(bool debug);
+		int checkMouse(bool robotFollowsMouse = false, bool debugMsg = false);
+		int draw(bool showTarget);
 
 	public:
 		pose2d target;
@@ -83,10 +83,10 @@ namespace lndw
 		Gui(sf::VideoMode mode, sf::VideoMode fullscreen_mode = sf::VideoMode(1366, 768) );
 		virtual ~Gui(){}
 		
-		int addArea(std::string name, sf::IntRect area, std::wstring text, std::string logo_pfad, std::string bild_pfad, float target_x, float target_y, float target_theta, bool debug = false, bool showGoButton = true);
+		int addArea(std::string name, sf::IntRect area, std::wstring text, std::string logo_pfad, std::string bild_pfad, float target_x, float target_y, float target_theta, bool debugMsg = false, bool showGoButton = true);
 		int setRobotPose(float x, float y, float theta);
 		bool isOpen();
-		int update(bool debug = false);
+		int update(bool drawTargetArrowAndBorder = false, bool robotFollowsMouse = false, bool debugMsg = false);
 
 		
 	};
