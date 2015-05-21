@@ -63,18 +63,32 @@ namespace lndw
 			sf::Texture texture_bild;
 			bool showGoButton;
 			pose2d target;
+			std::string goodbyeMsg;
 		};
 
 		std::vector<poi> areas;
 
+		struct state_machine {
+			bool base;
+			bool target;
+			bool moving;
+			bool saidGoodbye;
+			std::string current_goodbyeMsg;
+			sf::Clock timer;
+		} state;
+
 		int createStatics();
-		int setTargetPose(pose2d target_pose);
+		int initStateMachine();
+		int setTargetPose(pose2d target_pose, std::string msg);
 		int fitIn(sf::IntRect borders, sf::Texture *input, sf::Sprite *frame, bool debugMsg = false);
 		int fitInLogo(sf::IntRect borders, sf::Texture *input, sf::Sprite *frame, bool debugMsg = false);
 
 		int checkEvent();
 		int checkMouse(bool robotFollowsMouse = false, bool debugMsg = false);
+		int showArea(std::vector<lndw::Gui::poi>::iterator area, bool debugMsg);
 		int draw(bool showTarget);
+		int sayHello(bool debugMsg = false);
+		int sayGoodbye(bool debugMsg = false);
 
 	public:
 		pose2d target;
@@ -83,11 +97,10 @@ namespace lndw
 		Gui(sf::VideoMode mode, sf::VideoMode fullscreen_mode = sf::VideoMode(1366, 768) );
 		virtual ~Gui(){}
 		
-		int addArea(std::string name, sf::IntRect area, std::wstring text, std::string logo_pfad, std::string bild_pfad, float target_x, float target_y, float target_theta, bool debugMsg = false, bool showGoButton = true);
+		int addArea(std::string name, sf::IntRect area, std::wstring text, std::string logo_pfad, std::string bild_pfad, float target_x, float target_y, float target_theta, std::string goodbye_msg, bool debugMsg = false, bool showGoButton = true);
 		int setRobotPose(float x, float y, float theta);
 		bool isOpen();
 		int update(bool drawTargetArrowAndBorder = false, bool robotFollowsMouse = false, bool debugMsg = false);
-
 		
 	};
 };

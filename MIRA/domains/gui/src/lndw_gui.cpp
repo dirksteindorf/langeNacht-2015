@@ -10,16 +10,26 @@ namespace lndw
 		window_mode = mode;
 		this->fullscreen_mode = fullscreen_mode;
 		f_elf_pressed = false;
-		fullscreen_active = false;
+		fullscreen_active = false;		
 
-		addArea("LNdW 2015", sf::IntRect(115, 580, 169, 182), L"Zur Langen Nacht der Wissenschaft \n2015 präsentieren Ihnen die \nArbeitsgruppen ESS, IS und CSE \naktuelle Projekt aus dem Bereich \nder Robotik.", "res/white_square.png", "res/missing_fig_groß.png", 7.8, 20.4, M_PI * 0.4, false, true);
+		addArea("LNdW 2015", sf::IntRect(115, 580, 169, 182), L"Zur Langen Nacht der Wissenschaft \n2015 präsentieren Ihnen die \nArbeitsgruppen ESS, IS und CSE \naktuelle Projekt aus dem Bereich \nder Robotik.", "res/white_square.png", "res/missing_fig_groß.png", 7.8, 20.4, M_PI * 0.4, "", false, true);
 		
 		createStatics();
+		initStateMachine();
 
 		setRobotPose(7.8, 20.4, M_PI * 0.4);
 	}
 
 	int Gui::setRobotPose(float x, float y, float theta) {
+		float max_distance_square = 0.04; //[m^2]
+
+		float delta_base_square = (x - areas.begin()->target.x) * (x - areas.begin()->target.x) + (y - areas.begin()->target.y) * (y - areas.begin()->target.y);
+		float delta_target_square = (x - target.x) * (x - target.x) + (y - target.y) * (y - target.y);
+		//std::cout << "base^2: " << delta_base_square << " target^2: " << delta_target_square << "\n";
+
+		state.base = ( delta_base_square < max_distance_square ) ? true : false;
+		state.target = ( delta_target_square < max_distance_square ) ? true : false;
+		
 		robot.pos.x = x * 20.0 * scale + offset_karte.x;
 		robot.pos.y = y * 20.0 * scale + offset_karte.y;
 		robot.pos.theta = theta;
@@ -103,20 +113,33 @@ namespace lndw
 		target_arrow.setPoint(6, sf::Vector2f(0, 3));
 		target_arrow.setFillColor(sf::Color(220,0,0));
 
-		setTargetPose(areas.begin()->target);
+		setTargetPose(areas.begin()->target, areas.begin()->goodbyeMsg);
 
 		return 0;
 	}
 
-	int Gui::setTargetPose(pose2d target_pose) {
+	int Gui::initStateMachine() {
+		state.base = false;
+		state.target = false;
+		state.moving = true;
+		state.saidGoodbye = false;
+		state.current_goodbyeMsg = "";
+		state.timer = sf::Clock();
+		
+		return 0;
+	}
+	
+	int Gui::setTargetPose(pose2d target_pose, std::string msg) {
 		target = target_pose;
 		target_arrow.setPosition(target.x * 20.0 * scale + offset_karte.x, target.y * 20.0 * scale + offset_karte.y);
 		target_arrow.setRotation(target.theta * -180 /M_PI);
 
+		state.current_goodbyeMsg = msg;
+
 		return 0;
 	}
 
-	int Gui::addArea(std::string name, sf::IntRect area, std::wstring text, std::string logo_pfad, std::string bild_pfad, float target_x, float target_y, float target_theta, bool debugMsg, bool showGoButton){
+	int Gui::addArea(std::string name, sf::IntRect area, std::wstring text, std::string logo_pfad, std::string bild_pfad, float target_x, float target_y, float target_theta, std::string goodbye_msg, bool debugMsg, bool showGoButton){
 		poi newArea;
 		
 		newArea.area = area;
@@ -132,6 +155,7 @@ namespace lndw
 		newArea.target.x = target_x;
 		newArea.target.y = target_y;
 		newArea.target.theta = target_theta;
+		newArea.goodbyeMsg = goodbye_msg;
 		
 		newArea.name = name;
 		newArea.text = text;
@@ -161,6 +185,42 @@ namespace lndw
 		checkMouse(robotFollowsMouse, debugMsg);
 		draw(drawTargetArrowAndBorder);
 
+		if ( state.base ) {
+			sayHello(debugMsg);
+		} else if ( state.target ) {
+			sayGoodbye(debugMsg);
+		} else {
+			state.timer.restart();
+			state.moving = true;
+			state.saidGoodbye = false;
+			if (debugMsg) std::cout << "Moving\n";
+		}
+
+		return 0;
+	}
+
+	int Gui::sayHello(bool debugMsg) {
+		if ( state.moving || state.timer.getElapsedTime().asSeconds() > 12.0) {
+			std::cout << "Hello Again\n";
+			state.timer.restart();
+			state.moving = false;
+		}
+		return 0;
+	}
+
+	int Gui::sayGoodbye(bool debugMsg) {
+		if ( state.moving ) {
+			std::cout << "New At Target\n";
+			state.timer.restart();
+			state.moving = false;
+		} else if ( state.timer.getElapsedTime().asSeconds() > 1.5 && !state.saidGoodbye) {
+			std::cout << state.current_goodbyeMsg << "\n";
+			state.saidGoodbye = true;
+		} else if ( state.timer.getElapsedTime().asSeconds() > 7.0 ) {
+			std::cout << "Again At Target --> Leave\n";
+			showArea(areas.begin(), debugMsg);
+			publishPose();
+		}
 		return 0;
 	}
 
@@ -182,6 +242,9 @@ namespace lndw
 			exit(-1);
 		} else if (sf::Keyboard::isKeyPressed(sf::Keyboard::F11) && (window.hasFocus() || fullscreen_active) ) {
 			f_elf_pressed = true;
+		} else if (sf::Keyboard::isKeyPressed(sf::Keyboard::G) && goButton.show) {
+			std::cout << "Ich Fahr dann mal los.\n";
+			publishPose();
 		}
 
 		if ( !sf::Keyboard::isKeyPressed(sf::Keyboard::F11) && f_elf_pressed) {
@@ -211,17 +274,7 @@ namespace lndw
 
 			for(std::vector<poi>::iterator it=areas.begin(); it != areas.end(); it++) {
 				if (it->area.contains(position)) {
-					if (debugMsg) std::cout << it->name << "\n";
-					header.setString(it->name);
-					text.setString(it->text);
-
-					sf::IntRect temp_bereich = bild_bereich;
-					temp_bereich.top = text.getGlobalBounds().top + text.getGlobalBounds().height + 10;
-					temp_bereich.height = fin.getPosition().y - temp_bereich.top - 10;
-
-					fitIn(bild_bereich, &(it->texture_bild), &bild, debugMsg);
-					goButton.show = it->showGoButton;
-					setTargetPose(it->target);
+					showArea(it, debugMsg);
 				}
 			}
 
@@ -244,6 +297,22 @@ namespace lndw
 			setRobotPose( new_x, new_y, (new_x == old_x && new_y == old_y) ? robot.pos.theta : atan2(old_y - new_y, new_x - old_x));//-M_PI/2);//
 		}
 		
+		return 0;
+	}
+
+	int Gui::showArea(std::vector<lndw::Gui::poi>::iterator area, bool debugMsg) {
+		if (debugMsg) std::cout << area->name << "\n";
+		header.setString(area->name);
+		text.setString(area->text);
+
+		sf::IntRect temp_bereich = bild_bereich;
+		temp_bereich.top = text.getGlobalBounds().top + text.getGlobalBounds().height + 10;
+		temp_bereich.height = fin.getPosition().y - temp_bereich.top - 10;
+
+		fitIn(bild_bereich, &(area->texture_bild), &bild, debugMsg);
+		goButton.show = area->showGoButton;
+		setTargetPose(area->target, area->goodbyeMsg);
+
 		return 0;
 	}
 
@@ -302,7 +371,7 @@ namespace lndw
 
 		if (showTarget) window.draw(target_arrow);
 		
-		if (goButton.show) {
+		if (goButton.show && state.base) {
 			window.draw(goButton.color);
 			window.draw(goButton.text);
 		}
