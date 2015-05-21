@@ -18,7 +18,9 @@ lndw::Gui fenster(sf::VideoMode(1024, 768), sf::VideoMode(1024, 768));
 
 void onNewPose(mira::ChannelRead<mira::Pose2> data)
 {
-   mira::Pose2 pose = data->value();
+   mira::Pose2 pose = authority.getTransform<mira::Pose2>( "/robot/RobotFrame", 
+                                                            "/GlobalFrame",
+                                                            data.getTimestamp());
    fenster.setRobotPose(pose.x(), -pose.y(), pose.phi());  
    std::cout<<pose.x() << " " << pose.y() << " " <<pose.phi()<<std::endl;
 }
