@@ -12,11 +12,12 @@ namespace lndw
 		f_elf_pressed = false;
 		fullscreen_active = false;		
 
-		addArea("LNdW 2015", sf::IntRect(115, 580, 169, 182), L"Zur Langen Nacht der Wissenschaft \n2015 präsentieren Ihnen die \nArbeitsgruppen ESS, IS und CSE \naktuelle Projekt aus dem Bereich \nder Robotik.", "res/white_square.png", "res/missing_fig_groß.png", 7.8, 20.4, M_PI * 0.4, "", false, true);
+		addArea("LNdW 2015", sf::IntRect(115, 580, 169, 182), L"Zur Langen Nacht der Wissenschaft \n2015 präsentieren Ihnen die \nArbeitsgruppen ESS, IS und CSE \naktuelle Projekte aus dem Bereich \nder Robotik.", "res/white_square.png", "res/missing_fig_groß.png", 7.8, 20.4, M_PI * 0.4, "res/LNdW2015.ogg", false, true);
 		
 		createStatics();
 		initStateMachine();
-
+		
+		showArea(areas.begin());
 		setRobotPose(7.8, 20.4, M_PI * 0.4);
 	}
 
@@ -65,7 +66,7 @@ namespace lndw
 
 		float fin_scale=70.0/((float)texture_fin.getSize().y);
 		fin.setScale(fin_scale, fin_scale);
-		fin.setPosition(window.getSize().x - 10 - texture_fin.getSize().x * fin_scale, window.getSize().y - 2 - texture_fin.getSize().y * fin_scale);//offset_karte.x + 310, offset_karte.y + 600);
+		fin.setPosition(window.getSize().x - 10 - texture_fin.getSize().x * fin_scale, window.getSize().y - 2 - texture_fin.getSize().y * fin_scale);
 
 		int left_border = (int)(texture_karte.getSize().x*scale) + offset_karte.x + 10;
 		if ( !font.loadFromFile("/usr/share/fonts/truetype/dejavu/DejaVuSansMono.ttf") ) {
@@ -113,8 +114,6 @@ namespace lndw
 		target_arrow.setPoint(6, sf::Vector2f(0, 3));
 		target_arrow.setFillColor(sf::Color(220,0,0));
 
-		setTargetPose(areas.begin()->target, areas.begin()->goodbyeMsg);
-
 		return 0;
 	}
 
@@ -123,23 +122,22 @@ namespace lndw
 		state.target = false;
 		state.moving = true;
 		state.saidGoodbye = false;
-		state.current_goodbyeMsg = "";
+		state.navigation_stopped = false;
+		std::cout << "volume: " << state.speech.getVolume() << "\n";
 		state.timer = sf::Clock();
 		
 		return 0;
 	}
 	
-	int Gui::setTargetPose(pose2d target_pose, std::string msg) {
+	int Gui::setTargetPose(pose2d target_pose) {
 		target = target_pose;
 		target_arrow.setPosition(target.x * 20.0 * scale + offset_karte.x, target.y * 20.0 * scale + offset_karte.y);
 		target_arrow.setRotation(target.theta * -180 /M_PI);
 
-		state.current_goodbyeMsg = msg;
-
 		return 0;
 	}
 
-	int Gui::addArea(std::string name, sf::IntRect area, std::wstring text, std::string logo_pfad, std::string bild_pfad, float target_x, float target_y, float target_theta, std::string goodbye_msg, bool debugMsg, bool showGoButton){
+	int Gui::addArea(std::string name, sf::IntRect area, std::wstring text, std::string logo_pfad, std::string bild_pfad, float target_x, float target_y, float target_theta, std::string sprach_pfad, bool debugMsg, bool showGoButton){
 		poi newArea;
 		
 		newArea.area = area;
@@ -155,7 +153,6 @@ namespace lndw
 		newArea.target.x = target_x;
 		newArea.target.y = target_y;
 		newArea.target.theta = target_theta;
-		newArea.goodbyeMsg = goodbye_msg;
 		
 		newArea.name = name;
 		newArea.text = text;
@@ -163,6 +160,8 @@ namespace lndw
 
 		newArea.texture_logo.loadFromFile(logo_pfad);
 		newArea.logo = sf::Sprite();
+
+		newArea.speech = sprach_pfad;
 
 		areas.push_back(newArea);
 		
@@ -172,6 +171,8 @@ namespace lndw
 		for(std::vector<poi>::iterator it=areas.begin(); it != areas.end()--; it++) {
 			fitInLogo(it->area, &(it->texture_logo), &(it->logo));
 		}
+
+		showArea(areas.begin());
 		
 		return 0;
 	}
@@ -180,14 +181,18 @@ namespace lndw
 		return window.isOpen();
 	}
 
+	void Gui::setCurrentTargetReached() {
+		state.navigation_stopped = true;
+	}
+
 	int Gui::update(bool drawTargetArrowAndBorder, bool robotFollowsMouse, bool debugMsg) {
 		checkEvent();
 		checkMouse(robotFollowsMouse, debugMsg);
 		draw(drawTargetArrowAndBorder);
 
-		if ( state.base ) {
+		if ( state.base && state.navigation_stopped ) {
 			sayHello(debugMsg);
-		} else if ( state.target ) {
+		} else if ( state.target && state.navigation_stopped ) {
 			sayGoodbye(debugMsg);
 		} else {
 			state.timer.restart();
@@ -200,8 +205,10 @@ namespace lndw
 	}
 
 	int Gui::sayHello(bool debugMsg) {
-		if ( state.moving || state.timer.getElapsedTime().asSeconds() > 12.0) {
+		if ( state.moving || state.timer.getElapsedTime().asSeconds() > 13.0) {
 			std::cout << "Hello Again\n";
+			state.speech.openFromFile(areas.begin()->speech);
+			state.speech.play();
 			state.timer.restart();
 			state.moving = false;
 		}
@@ -211,16 +218,24 @@ namespace lndw
 	int Gui::sayGoodbye(bool debugMsg) {
 		if ( state.moving ) {
 			std::cout << "New At Target\n";
+			state.speech.openFromFile(state.next_speech);
 			state.timer.restart();
 			state.moving = false;
 		} else if ( state.timer.getElapsedTime().asSeconds() > 1.5 && !state.saidGoodbye) {
-			std::cout << state.current_goodbyeMsg << "\n";
+			state.speech.play();
 			state.saidGoodbye = true;
 		} else if ( state.timer.getElapsedTime().asSeconds() > 7.0 ) {
-			std::cout << "Again At Target --> Leave\n";
 			showArea(areas.begin(), debugMsg);
-			publishPose();
+			publishTarget();
 		}
+		return 0;
+	}
+
+	int Gui::publishTarget(bool debugMsg) {
+		if (debugMsg) std::cout << "Ich Fahr dann mal los.\n";
+		publishPose();
+		state.navigation_stopped = false;
+ 
 		return 0;
 	}
 
@@ -242,9 +257,8 @@ namespace lndw
 			exit(-1);
 		} else if (sf::Keyboard::isKeyPressed(sf::Keyboard::F11) && (window.hasFocus() || fullscreen_active) ) {
 			f_elf_pressed = true;
-		} else if (sf::Keyboard::isKeyPressed(sf::Keyboard::G) && goButton.show) {
-			std::cout << "Ich Fahr dann mal los.\n";
-			publishPose();
+		} else if (sf::Keyboard::isKeyPressed(sf::Keyboard::G) && goButton.show && (window.hasFocus() || fullscreen_active)) {
+			publishTarget(true);
 		}
 
 		if ( !sf::Keyboard::isKeyPressed(sf::Keyboard::F11) && f_elf_pressed) {
@@ -273,15 +287,10 @@ namespace lndw
 		    if (debugMsg) std::cout << "Pos: x=" << position.x << " y=" << position.y << "\n";
 
 			for(std::vector<poi>::iterator it=areas.begin(); it != areas.end(); it++) {
-				if (it->area.contains(position)) {
-					showArea(it, debugMsg);
-				}
+				if (it->area.contains(position)) showArea(it, debugMsg);
 			}
 
-			if (goButton.area.contains(position) && goButton.show) {
-				if (debugMsg) std::cout << "Ich Fahr dann mal los.\n";
-				publishPose();
-			}
+			if (goButton.area.contains(position) && goButton.show) publishTarget();
 		}
 		
 		sf::Vector2i position = sf::Mouse::getPosition(window);
@@ -295,6 +304,7 @@ namespace lndw
 			float old_x = (robot.pos.x - offset_karte.x) * 0.05 /scale;
 			float old_y = (robot.pos.y - offset_karte.y) * 0.05 /scale;
 			setRobotPose( new_x, new_y, (new_x == old_x && new_y == old_y) ? robot.pos.theta : atan2(old_y - new_y, new_x - old_x));//-M_PI/2);//
+			if (new_x == old_x && new_y == old_y) setCurrentTargetReached();
 		}
 		
 		return 0;
@@ -311,7 +321,9 @@ namespace lndw
 
 		fitIn(bild_bereich, &(area->texture_bild), &bild, debugMsg);
 		goButton.show = area->showGoButton;
-		setTargetPose(area->target, area->goodbyeMsg);
+		setTargetPose(area->target);
+		
+		state.next_speech = area->speech;
 
 		return 0;
 	}
