@@ -26,10 +26,17 @@ void onNewPose(mira::ChannelRead<mira::Pose2> data)
    std::cout<<pose.x() << " " << pose.y() << " " <<pose.phi()<<std::endl;
 }
 
+void onNewPilotEvent(mira::ChannelRead<std::string> data)
+{
+    if(data->value() == "GoalReached") {
+        fenster.setCurrentTargetReached();
+    }
+}
+
 void updateGui(const Timer& timer)
 {
     bool drawTargetArrowAndBorder = true;
-    bool robotFollowsMouse = true;
+    bool robotFollowsMouse = false;
     
     if(fenster.isOpen()) {
         fenster.update(drawTargetArrowAndBorder, robotFollowsMouse, debugMsg);
@@ -59,6 +66,7 @@ int main(int argc, char** argv)
     authority.checkin("/", "guiAuthority");
     authority.createTimer(Duration::milliseconds(50), &updateGui);
     authority.subscribe<mira::Pose2>("/robot/RobotFrame", &onNewPose);
+    authority.subscribe<std::string>("/navigation/PilotEvent", &onNewPilotEvent);
 
     goalChannel = authority.publish<mira::Pose2>("goalChannel");
 
