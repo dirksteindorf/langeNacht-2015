@@ -49,7 +49,7 @@ namespace lndw
 		background = sf::RectangleShape( sf::Vector2f(window.getSize().x, window.getSize().y) );
 		background.setFillColor(sf::Color(205, 205, 205));
 		
-		texture_karte.loadFromFile("res/hoersaal.png");
+		texture_karte.loadFromFile("res/hoersaal_clean.png");
 		karte = sf::Sprite(texture_karte);
 
 		scale=((float)window.getSize().y)/480.0;
@@ -69,7 +69,7 @@ namespace lndw
 		fin.setPosition(window.getSize().x - 10 - texture_fin.getSize().x * fin_scale, window.getSize().y - 2 - texture_fin.getSize().y * fin_scale);
 
 		int left_border = (int)(texture_karte.getSize().x*scale) + offset_karte.x + 10;
-		if ( !font.loadFromFile("/usr/share/fonts/truetype/dejavu/DejaVuSansMono.ttf") ) {
+		if ( !font.loadFromFile("/usr/share/fonts/truetype/droid/DroidSansMono.ttf") ) {
 			font.loadFromFile("/usr/share/fonts/truetype/ttf-dejavu/DejaVuSansMono.ttf");
 		}
 

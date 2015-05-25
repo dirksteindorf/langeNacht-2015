@@ -56,10 +56,10 @@ int main(int argc, char** argv)
     std::wstring counter = L"123456789 123456789 123456789 123456789 \n123456789 123456789 123456789 \n123456789 123456789 123456789 \n123456789 123456789 123456789 \n123456789 123456789 123456789 ";
     //main-image: ca. 596 x 400 px
 
-    fenster.addArea("oTToCAR", sf::IntRect(200, 15, 170, 370), counter, "res/oTToCAR_Logo.png", "res/ottocar_CeBIT2015_03.jpg", 8.0, 10.4, M_PI * 0.6, "res/ottocar.ogg", debugMsg);
+    fenster.addArea("oTToCAR", sf::IntRect(200, 9, 170, 375), counter, "res/oTToCAR_Logo.png", "res/ottocar_CeBIT2015_03.jpg", 8.0, 10.4, M_PI * 0.6, "res/ottocar.ogg", debugMsg);
     fenster.addArea("robOTTO", sf::IntRect(10, 255, 120, 320), counter, "res/logo-robotto.png", "res/robotto.png", 4.4, 13.0, M_PI * 0.55, "res/robotto.ogg", debugMsg);
     fenster.addArea("Finken Projekt", sf::IntRect(10, 130, 100, 124), counter, "res/finken-logo.png", "res/finken.png", 6.0, 15.1, M_PI * 0.75, "res/finken.ogg", debugMsg);   //demo_pose im Gang; org_pose: 3.6, 5.4, M_PI * 0.55
-    fenster.addArea("AG CSE", sf::IntRect(250, 436, 120, 142), counter, "res/red_logo.png", "res/missing_fig_groß.png", 7.7, 14.7, M_PI * 0.45, "res/cse.ogg", debugMsg);
+    fenster.addArea("AG CSE", sf::IntRect(250, 430, 120, 142), counter, "res/red_logo.png", "res/missing_fig_groß.png", 7.7, 14.7, M_PI * 0.45, "res/cse.ogg", debugMsg);
 
     Framework framework(argc, argv, true);
 
