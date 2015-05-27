@@ -35,15 +35,14 @@ MIRA_ADD_LIBRARY(guiSubscriber
 
 ###############################################################################
 
-MIRA_ADD_BINARY(sfmltest
-    SOURCE
-        src/sfmlTest.cc
-
-    LINK_LIBS
-        MIRAFramework
-        ${SFML_LIBRARIES}
-)
-
+#MIRA_ADD_BINARY(sfmltest
+#    SOURCE
+#        src/sfmlTest.cc
+#
+#    LINK_LIBS
+#        MIRAFramework
+#        ${SFML_LIBRARIES}
+#)
 
 ###############################################################################
 
@@ -51,7 +50,8 @@ MIRA_ADD_BINARY(sfml_gui
     SOURCE
         src/main.cpp
         src/lndw_gui.cpp
-
+        src/arduino-serial-lib.cc
+        
     LINK_LIBS
         MIRAFramework
         ${SFML_LIBRARIES}

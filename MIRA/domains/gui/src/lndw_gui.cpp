@@ -184,6 +184,10 @@ namespace lndw
 	void Gui::setCurrentTargetReached() {
 		state.navigation_stopped = true;
 	}
+	
+	void Gui::setPersonPresent(bool isPresent) {
+	    personIsPresent = isPresent;
+	}
 
 	int Gui::update(bool drawTargetArrowAndBorder, bool robotFollowsMouse, bool debugMsg) {
 		checkEvent();

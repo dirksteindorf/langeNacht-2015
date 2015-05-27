@@ -1,10 +1,15 @@
 #include "lndw_gui.hpp"
+#include "arduino-serial-lib.h"
+
+#include <unistd.h>   // for usleep()
+#include <getopt.h>
 
 #include <fw/Framework.h>
 #include <fw/ChannelReadWrite.h>
 #include <transform/Pose.h>
 
 #include <iostream>
+
 
 using namespace mira;
 
@@ -16,6 +21,14 @@ mira::Channel<Pose2> goalChannel;
 lndw::Gui fenster(sf::VideoMode(1024, 768), sf::VideoMode(1024, 768));
 
 bool debugMsg = false;
+
+// arduino
+int fd = -1;
+const int buf_max = 256;
+char buf[buf_max];
+int timeout = 500;
+char eolchar= '\n';
+
 
 void onNewPose(mira::ChannelRead<mira::Pose2> data)
 {
@@ -43,6 +56,23 @@ void updateGui(const Timer& timer)
     }
 }
 
+void readArduino(const Timer& timer)
+{
+    if(fd == -1)
+        std::cout << "serial port not opened" << std::endl;
+    
+    memset(buf, 0, buf_max);
+    serialport_read_until(fd, buf, eolchar, buf_max, timeout);
+    int i = atoi(buf);
+    
+    if(i > 220)
+        fenster.setPersonPresent(true);
+    else
+        fenster.setPersonPresent(false);
+        
+    // std::cout<<i<<std::endl;
+}
+
 void publishPose()
 {
     goalChannel.post(mira::Pose2(   fenster.target.x, 
@@ -60,11 +90,22 @@ int main(int argc, char** argv)
     fenster.addArea("robOTTO", sf::IntRect(10, 255, 120, 320), counter, "res/logo-robotto.png", "res/robotto.png", 4.4, 13.0, M_PI * 0.55, "res/robotto.ogg", debugMsg);
     fenster.addArea("Finken Projekt", sf::IntRect(10, 130, 100, 124), counter, "res/finken-logo.png", "res/finken.png", 6.0, 15.1, M_PI * 0.75, "res/finken.ogg", debugMsg);   //demo_pose im Gang; org_pose: 3.6, 5.4, M_PI * 0.55
     fenster.addArea("AG CSE", sf::IntRect(250, 430, 120, 142), counter, "res/red_logo.png", "res/missing_fig_groß.png", 7.7, 14.7, M_PI * 0.45, "res/cse.ogg", debugMsg);
-
+    
+    
+    // arduino stuff
+    int baudrate = 9600;
+    char *portname = "/dev/ttyACM0";
+    fd = serialport_init(portname, baudrate);
+    
+    if( fd==-1 ) 
+        std::cout << "couldn't open port" << std::endl;
+    
+    // MIRA stuff
     Framework framework(argc, argv, true);
 
     authority.checkin("/", "guiAuthority");
     authority.createTimer(Duration::milliseconds(50), &updateGui);
+    authority.createTimer(Duration::milliseconds(40), &readArduino);
     authority.subscribe<mira::Pose2>("/robot/RobotFrame", &onNewPose);
     authority.subscribe<std::string>("/navigation/PilotEvent", &onNewPilotEvent);
 

@@ -31,6 +31,7 @@ namespace lndw
 		sf::ConvexShape target_arrow;
 		bool mouseWasPressed;
 		bool f_elf_pressed;
+		bool personIsPresent;
 
 		struct button {
 			sf::IntRect area;
@@ -99,6 +100,7 @@ namespace lndw
 	public:
 		pose2d target;
 		void setCurrentTargetReached();
+		void setPersonPresent(bool isPresent);
 	
 		Gui(sf::VideoMode mode, sf::VideoMode fullscreen_mode = sf::VideoMode(1366, 768) );
 		virtual ~Gui(){}
