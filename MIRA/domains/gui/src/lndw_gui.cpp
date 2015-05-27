@@ -125,6 +125,9 @@ namespace lndw
 		state.navigation_stopped = false;
 		std::cout << "volume: " << state.speech.getVolume() << "\n";
 		state.timer = sf::Clock();
+		for (int i=0; i<24; i++) state.personIsMaybePresent[i] = false;
+		state.nextField = 0;
+		state.personIsPresent = false;
 		
 		return 0;
 	}
@@ -186,7 +189,15 @@ namespace lndw
 	}
 	
 	void Gui::setPersonPresent(bool isPresent) {
-	    personIsPresent = isPresent;
+	    state.personIsMaybePresent[state.nextField] = isPresent;
+	    state.nextField = (state.nextField < 24) ? state.nextField + 1 : 0;
+
+	    int count=0;
+	    for (int i=0; i<25; i++) if (state.personIsMaybePresent[i]) count++;
+
+	    state.personIsPresent = (count > 20);
+
+	    //std::cout << "lastMaybe: " << isPresent << " person is: " << state.personIsPresent << "\n";
 	}
 
 	int Gui::update(bool drawTargetArrowAndBorder, bool robotFollowsMouse, bool debugMsg) {
@@ -209,7 +220,7 @@ namespace lndw
 	}
 
 	int Gui::sayHello(bool debugMsg) {
-		if ( state.moving || state.timer.getElapsedTime().asSeconds() > 13.0) {
+		if ( state.personIsPresent && state.timer.getElapsedTime().asSeconds() > 13.0) {
 			std::cout << "Hello Again\n";
 			state.speech.openFromFile(areas.begin()->speech);
 			state.speech.play();

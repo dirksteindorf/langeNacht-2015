@@ -31,7 +31,6 @@ namespace lndw
 		sf::ConvexShape target_arrow;
 		bool mouseWasPressed;
 		bool f_elf_pressed;
-		bool personIsPresent;
 
 		struct button {
 			sf::IntRect area;
@@ -81,6 +80,9 @@ namespace lndw
 			sf::Music speech;
 			std::string next_speech;
 			sf::Clock timer;
+			bool personIsMaybePresent[25];
+			int nextField;
+			bool personIsPresent;
 		} state;
 
 		int createStatics();

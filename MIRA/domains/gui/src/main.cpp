@@ -64,13 +64,15 @@ void readArduino(const Timer& timer)
     memset(buf, 0, buf_max);
     serialport_read_until(fd, buf, eolchar, buf_max, timeout);
     int i = atoi(buf);
-    
-    if(i > 220)
-        fenster.setPersonPresent(true);
-    else
-        fenster.setPersonPresent(false);
-        
-    // std::cout<<i<<std::endl;
+
+    if (i!=0) {
+        if(i > 220)
+            fenster.setPersonPresent(true);
+        else
+            fenster.setPersonPresent(false);
+            
+        // std::cout<<i<<std::endl;
+     }
 }
 
 void publishPose()
@@ -105,7 +107,7 @@ int main(int argc, char** argv)
 
     authority.checkin("/", "guiAuthority");
     authority.createTimer(Duration::milliseconds(50), &updateGui);
-    authority.createTimer(Duration::milliseconds(40), &readArduino);
+    authority.createTimer(Duration::milliseconds(20), &readArduino);
     authority.subscribe<mira::Pose2>("/robot/RobotFrame", &onNewPose);
     authority.subscribe<std::string>("/navigation/PilotEvent", &onNewPilotEvent);
 
