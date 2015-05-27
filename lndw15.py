@@ -4,6 +4,7 @@ import subprocess
 import re
 import time
 import os
+import sys
 
 cmd = "wmctrl"
 name = "Default - rqt"
@@ -23,8 +24,6 @@ if __name__ == "__main__":
   i = 0
   while(True):
     os.system(cmd+" -i -R "+windows[i])
-    print "current window: "+windows[i]
     i+=1
     i%=len(windows)
-    time.sleep(10)
-    print "time's up"
+    time.sleep(int(sys.argv[1]))
