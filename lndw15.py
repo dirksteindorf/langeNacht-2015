@@ -20,10 +20,14 @@ def getWindows(name):
   return windows
 
 if __name__ == "__main__":
+  try:
+    sleepTime = int(sys.argv[1])
+  except:
+    sleepTime = 300
   windows = getWindows(name)
   i = 0
   while(True):
     os.system(cmd+" -i -R "+windows[i])
     i+=1
     i%=len(windows)
-    time.sleep(int(sys.argv[1]))
+    time.sleep(sleepTime)
