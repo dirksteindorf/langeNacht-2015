@@ -12,7 +12,7 @@ namespace lndw
 		f_elf_pressed = false;
 		fullscreen_active = false;		
 
-		addArea("LNdW 2015", sf::IntRect(115, 580, 169, 182), L"Zur Langen Nacht der Wissenschaft \n2015 präsentieren Ihnen die \nArbeitsgruppen ESS, IS und CSE \naktuelle Projekte aus dem Bereich \nder Robotik.", "res/white_square.png", "res/missing_fig_groß.png", 7.8, 20.4, M_PI * 0.4, "res/LNdW2015.ogg", false, true);
+		addArea("LNdW 2015", sf::IntRect(115, 580, 169, 182), L"Zur Langen Nacht der Wissenschaft \n2015 präsentieren Ihnen die \nArbeitsgruppen ESS, IS und CSE \naktuelle Projekte aus dem Bereich \nder Robotik.", "res/white_square.png", "res/lndw15_start.png", 7.8, 20.4, M_PI * 0.4, "res/LNdW2015.ogg", false, true);
 		
 		createStatics();
 		initStateMachine();
@@ -236,10 +236,10 @@ namespace lndw
 			state.speech.openFromFile(state.next_speech);
 			state.timer.restart();
 			state.moving = false;
-		} else if ( state.timer.getElapsedTime().asSeconds() > 1.5 && !state.saidGoodbye) {
+		} else if ( state.timer.getElapsedTime().asSeconds() > 0.5 && !state.saidGoodbye) {
 			state.speech.play();
 			state.saidGoodbye = true;
-		} else if ( state.timer.getElapsedTime().asSeconds() > 7.0 ) {
+		} else if ( state.timer.getElapsedTime().asSeconds() > state.speech.getDuration().asSeconds() + 2.0 ) {
 			showArea(areas.begin(), debugMsg);
 			publishTarget();
 		}
