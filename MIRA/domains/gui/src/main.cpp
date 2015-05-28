@@ -49,7 +49,7 @@ void onNewPilotEvent(mira::ChannelRead<std::string> data)
 void updateGui(const Timer& timer)
 {
     bool drawTargetArrowAndBorder = true;
-    bool robotFollowsMouse = false;
+    bool robotFollowsMouse = true;
     
     if(fenster.isOpen()) {
         fenster.update(drawTargetArrowAndBorder, robotFollowsMouse, debugMsg);
@@ -71,7 +71,7 @@ void readArduino(const Timer& timer)
         else
             fenster.setPersonPresent(false);
             
-        // std::cout<<i<<std::endl;
+         //std::cout<<i<<std::endl;
      }
 }
 

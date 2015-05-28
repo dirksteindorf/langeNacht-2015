@@ -220,7 +220,7 @@ namespace lndw
 	}
 
 	int Gui::sayHello(bool debugMsg) {
-		if ( state.personIsPresent && state.timer.getElapsedTime().asSeconds() > 13.0) {
+		if ( state.personIsPresent && (state.timer.getElapsedTime().asSeconds() > 13.0 || state.moving)) {
 			std::cout << "Hello Again\n";
 			state.speech.openFromFile(areas.begin()->speech);
 			state.speech.play();
