@@ -343,7 +343,7 @@ namespace lndw
 		temp_bereich.top = text.getGlobalBounds().top + text.getGlobalBounds().height + 10;
 		temp_bereich.height = fin.getPosition().y - temp_bereich.top - 10;
 
-		fitIn(bild_bereich, &(area->texture_bild), &bild, debugMsg);
+		fitIn(temp_bereich, &(area->texture_bild), &bild, debugMsg);
 		goButton.show = area->showGoButton;
 		setTargetPose(area->target);
 		

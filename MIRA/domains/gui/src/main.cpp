@@ -96,7 +96,7 @@ int main(int argc, char** argv)
 
     std::wstring counter = L"123456789 123456789 123456789 123456789 \n123456789 123456789 123456789 \n123456789 123456789 123456789 \n123456789 123456789 123456789 \n123456789 123456789 123456789 ";
     std::wstring cse_text = L"\n\n\nStudenten zeigen einen komplett\nselbstentwickelten Roboter aus\neiner Projektarbeit.";
-    fenster.addArea("Digitale\nEngineering", sf::IntRect(250, 430, 120, 142), cse_text, "res/cse_logo.png", "res/missing_fig_groß.png", 7.7, 14.7, M_PI * 0.45, "res/cse.ogg", debugMsg);
+    fenster.addArea("Digitale\nEngineering", sf::IntRect(250, 430, 120, 142), cse_text, "res/cse_logo.png", "res/cse_modularRobot.jpg", 7.7, 14.7, M_PI * 0.45, "res/cse.ogg", debugMsg);
     
     
     // arduino stuff
