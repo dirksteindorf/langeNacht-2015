@@ -49,7 +49,7 @@ void onNewPilotEvent(mira::ChannelRead<std::string> data)
 void updateGui(const Timer& timer)
 {
     bool drawTargetArrowAndBorder = true;
-    bool robotFollowsMouse = true;
+    bool robotFollowsMouse = false;
     
     if(fenster.isOpen()) {
         fenster.update(drawTargetArrowAndBorder, robotFollowsMouse, debugMsg);
@@ -86,16 +86,17 @@ void publishPose()
 int main(int argc, char** argv)
 {//main-image: 597 x 400 px
     std::wstring ottocar_text = L"Das Studententeam entwickelt ein\nautonom fahrendes Modellauto,\ndass selbstständig fährt,\nüberholt und einparkt.\nBesuchen Sie uns!";
-    fenster.addArea("oTToCAR", sf::IntRect(200, 9, 170, 375), ottocar_text, "res/oTToCAR_Logo.png", "res/ottocar_CeBIT2015_03.jpg", 8.0, 10.4, M_PI * 0.6, "res/ottocar.ogg", debugMsg);
+    fenster.addArea("oTToCAR", sf::IntRect(198, 7, 172, 375), ottocar_text, "res/oTToCAR_Logo.png", "res/ottocar_CeBIT2015_03.jpg", 8.0, 10.4, M_PI * 0.6, "res/ottocar.ogg", debugMsg);
     
     std::wstring robotto_text = L"Positionieren, Greifen und\nAblegen ist für einen Roboter\neine Herausforderung - die wir\nmeistern. Überzeugen Sie sich\nan unserem Stand!";
-    fenster.addArea("robOTTO", sf::IntRect(10, 255, 120, 320), robotto_text, "res/logo-robotto.png", "res/robotto.png", 4.4, 13.0, M_PI * 0.55, "res/robotto.ogg", debugMsg);
+    fenster.addArea("robOTTO", sf::IntRect(10, 255, 120, 315), robotto_text, "res/logo-robotto.png", "res/robotto.png", 4.4, 13.0, M_PI * 0.55, "res/robotto.ogg", debugMsg);
     
     std::wstring finken_text = L"Schwarmrobotik mit Quadkoptern\nDie \"FINken\" sind autonome\nEinheiten die mit einander und\nihrer Umgebung interagieren.\nBesuchen Sie sie!";
-    fenster.addArea("SwarmLab", sf::IntRect(10, 130, 100, 124), finken_text, "res/finken-logo.png", "res/finken.png", 6.0, 15.1, M_PI * 0.75, "res/finken.ogg", debugMsg);   //demo_pose im Gang; org_pose: 3.6, 5.4, M_PI * 0.55
+    fenster.addArea("SwarmLab", sf::IntRect(10, 125, 100, 114), finken_text, "res/finken-logo.png", "res/finken.png", 6.0, 15.1, M_PI * 0.75, "res/finken.ogg", debugMsg);   //demo_pose im Gang; org_pose: 3.6, 5.4, M_PI * 0.55
 
-    std::wstring cse_text = L"123456789 123456789 123456789 123456789 \n123456789 123456789 123456789 \n123456789 123456789 123456789 \n123456789 123456789 123456789 \n123456789 123456789 123456789 ";
-    fenster.addArea("AG CSE", sf::IntRect(250, 430, 120, 142), cse_text, "res/red_logo.png", "res/missing_fig_groß.png", 7.7, 14.7, M_PI * 0.45, "res/cse.ogg", debugMsg);
+    std::wstring counter = L"123456789 123456789 123456789 123456789 \n123456789 123456789 123456789 \n123456789 123456789 123456789 \n123456789 123456789 123456789 \n123456789 123456789 123456789 ";
+    std::wstring cse_text = L"\n\n\nStudenten zeigen einen komplett\nselbstentwickelten Roboter aus\neiner Projektarbeit.";
+    fenster.addArea("Digitale\nEngineering", sf::IntRect(250, 430, 120, 142), cse_text, "res/cse_logo.png", "res/missing_fig_groß.png", 7.7, 14.7, M_PI * 0.45, "res/cse.ogg", debugMsg);
     
     
     // arduino stuff
