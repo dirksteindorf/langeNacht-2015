@@ -12,13 +12,13 @@ namespace lndw
 		f_elf_pressed = false;
 		fullscreen_active = false;		
 
-		addArea("LNdW 2015", sf::IntRect(115, 580, 169, 182), L"Zur Langen Nacht der Wissenschaft \n2015 präsentieren Ihnen die \nArbeitsgruppen ESS, IS und CSE \naktuelle Projekte aus dem Bereich \nder Robotik.", "res/white_square.png", "res/lndw15_start.png", 7.8, 20.4, M_PI * 0.4, "res/LNdW2015.ogg", false, true, false);
+		addArea("LNdW 2015", sf::IntRect(115, 580, 169, 182), L"Zur Langen Nacht der Wissenschaft \n2015 präsentieren Ihnen die \nArbeitsgruppen ESS, IS und CSE \naktuelle Projekte aus dem Bereich \nder Robotik.", "res/white_square.png", "res/lndw15_start.png", 7.6, 21.5, M_PI * 0.266, "res/LNdW2015.ogg", false, true, false);
 		
 		createStatics();
 		initStateMachine();
 		
 		showArea(areas.begin());
-		setRobotPose(7.8, 20.4, M_PI * 0.4);
+		setRobotPose(7.6, 21.5, M_PI * 0.266);
 	}
 
 	int Gui::setRobotPose(float x, float y, float theta) {

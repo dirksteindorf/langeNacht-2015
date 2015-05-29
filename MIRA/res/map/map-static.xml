@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <root>
   <Map>
-    <Image>map-static.png</Image>
+    <Image>map-static2.png</Image>
     <CellSize>0.050000</CellSize>
     <Offset>
       <X>0</X>
-      <Y>706</Y>
+      <Y>542</Y>
     </Offset>
   </Map>
 </root>
