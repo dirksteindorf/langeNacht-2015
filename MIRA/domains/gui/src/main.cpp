@@ -36,7 +36,7 @@ void onNewPose(mira::ChannelRead<mira::Pose2> data)
                                                             "/GlobalFrame",
                                                             data.getTimestamp());
    fenster.setRobotPose(pose.x(), -pose.y(), pose.phi());  
-   std::cout<<pose.x() << " " << pose.y() << " " <<pose.phi()<<std::endl;
+   //std::cout<<pose.x() << " " << pose.y() << " " <<pose.phi()<<std::endl;
 }
 
 void onNewPilotEvent(mira::ChannelRead<std::string> data)
@@ -98,7 +98,7 @@ int main(int argc, char** argv)
 
     std::wstring counter = L"123456789 123456789 123456789 123456789 \n123456789 123456789 123456789 \n123456789 123456789 123456789 \n123456789 123456789 123456789 \n123456789 123456789 123456789 ";
     std::wstring cse_text = L"\n\n\nStudenten zeigen einen komplett\nselbstentwickelten Roboter aus\neiner Projektarbeit.";
-    fenster.addArea("Digital\nEngineering", sf::IntRect(250, 430, 120, 142), cse_text, "res/cse_logo.png", "res/cse_modularRobot.jpg", 7.7, 16.0, M_PI * 0.18, "res/cse.ogg", debugMsg);
+    fenster.addArea("Digital\nEngineering", sf::IntRect(250, 430, 120, 142), cse_text, "res/cse_logo.png", "res/cse_modularRobot.jpg", 7.2, 16.0, M_PI * 0.18, "res/cse.ogg", debugMsg);
     
     
     // arduino stuff

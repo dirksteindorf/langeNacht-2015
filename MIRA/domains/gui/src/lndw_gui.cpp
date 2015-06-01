@@ -229,8 +229,8 @@ namespace lndw
 	}
 
 	int Gui::sayHello(bool debugMsg) {
-		if ( state.personIsPresent && (state.timer.getElapsedTime().asSeconds() > 13.0 || state.moving)) {
-			std::cout << "Hello Again\n";
+		if ( state.personIsPresent && (state.timer.getElapsedTime().asSeconds() > 60.0 || state.moving)) {
+			//std::cout << "Hello Again\n";
 			state.speech.openFromFile(areas.begin()->speech);
 			state.speech.play();
 			state.timer.restart();
@@ -241,7 +241,7 @@ namespace lndw
 
 	int Gui::sayGoodbye(bool debugMsg) {
 		if ( state.moving ) {
-			std::cout << "New At Target\n";
+			//std::cout << "New At Target\n";
 			state.speech.openFromFile(state.next_speech);
 			state.timer.restart();
 			state.moving = false;
