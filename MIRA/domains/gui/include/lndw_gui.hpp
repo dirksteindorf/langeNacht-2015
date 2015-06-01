@@ -19,6 +19,8 @@ namespace lndw
 		sf::RectangleShape bottom_line;
 		sf::Texture texture_karte;
 		sf::Sprite karte;
+		sf::Texture texture_blaupause;
+		sf::Sprite blaupause;
 		float scale;
 		sf::Texture texture_fin;
 		sf::Sprite fin;
@@ -80,6 +82,9 @@ namespace lndw
 			sf::Music speech;
 			std::string next_speech;
 			sf::Clock timer;
+			bool personIsMaybePresent[25];
+			int nextField;
+			bool personIsPresent;
 		} state;
 
 		int createStatics();
@@ -99,11 +104,12 @@ namespace lndw
 	public:
 		pose2d target;
 		void setCurrentTargetReached();
+		void setPersonPresent(bool isPresent);
 	
 		Gui(sf::VideoMode mode, sf::VideoMode fullscreen_mode = sf::VideoMode(1366, 768) );
 		virtual ~Gui(){}
 		
-		int addArea(std::string name, sf::IntRect area, std::wstring text, std::string logo_pfad, std::string bild_pfad, float target_x, float target_y, float target_theta, std::string sprach_pfad, bool debugMsg = false, bool showGoButton = true);
+		int addArea(std::string name, sf::IntRect area, std::wstring text, std::string logo_pfad, std::string bild_pfad, float target_x, float target_y, float target_theta, std::string sprach_pfad, bool debugMsg = false, bool showGoButton = true, bool showWhiteArea = true);
 		int setRobotPose(float x, float y, float theta);
 		bool isOpen();
 		int update(bool drawTargetArrowAndBorder = false, bool robotFollowsMouse = false, bool debugMsg = false);

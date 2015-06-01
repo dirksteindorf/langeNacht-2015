@@ -12,13 +12,13 @@ namespace lndw
 		f_elf_pressed = false;
 		fullscreen_active = false;		
 
-		addArea("LNdW 2015", sf::IntRect(115, 580, 169, 182), L"Zur Langen Nacht der Wissenschaft \n2015 präsentieren Ihnen die \nArbeitsgruppen ESS, IS und CSE \naktuelle Projekte aus dem Bereich \nder Robotik.", "res/white_square.png", "res/missing_fig_groß.png", 7.8, 20.4, M_PI * 0.4, "res/LNdW2015.ogg", false, true);
+		addArea("LNdW 2015", sf::IntRect(115, 580, 169, 182), L"Zur Langen Nacht der Wissenschaft \n2015 präsentieren Ihnen die \nArbeitsgruppen ESS, IS und CSE \naktuelle Projekte aus dem Bereich \nder Robotik.", "res/white_square.png", "res/lndw15_start.png", 7.6, 21.5, M_PI * 0.266, "res/LNdW2015.ogg", false, true, false);
 		
 		createStatics();
 		initStateMachine();
 		
 		showArea(areas.begin());
-		setRobotPose(7.8, 20.4, M_PI * 0.4);
+		setRobotPose(7.6, 21.5, M_PI * 0.266);
 	}
 
 	int Gui::setRobotPose(float x, float y, float theta) {
@@ -51,6 +51,10 @@ namespace lndw
 		
 		texture_karte.loadFromFile("res/hoersaal_clean.png");
 		karte = sf::Sprite(texture_karte);
+
+		texture_blaupause.loadFromFile("res/raumskizze_blaupause.png");
+		blaupause = sf::Sprite(texture_blaupause);
+		blaupause.setPosition(24, 8);
 
 		scale=((float)window.getSize().y)/480.0;
 		karte.setScale(scale, scale);
@@ -112,7 +116,7 @@ namespace lndw
 		target_arrow.setPoint(4, sf::Vector2f(20, 6));
 		target_arrow.setPoint(5, sf::Vector2f(20, 3));
 		target_arrow.setPoint(6, sf::Vector2f(0, 3));
-		target_arrow.setFillColor(sf::Color(220,0,0));
+		target_arrow.setFillColor(sf::Color(0,0,0));
 
 		return 0;
 	}
@@ -125,6 +129,9 @@ namespace lndw
 		state.navigation_stopped = false;
 		std::cout << "volume: " << state.speech.getVolume() << "\n";
 		state.timer = sf::Clock();
+		for (int i=0; i<24; i++) state.personIsMaybePresent[i] = false;
+		state.nextField = 0;
+		state.personIsPresent = false;
 		
 		return 0;
 	}
@@ -137,7 +144,7 @@ namespace lndw
 		return 0;
 	}
 
-	int Gui::addArea(std::string name, sf::IntRect area, std::wstring text, std::string logo_pfad, std::string bild_pfad, float target_x, float target_y, float target_theta, std::string sprach_pfad, bool debugMsg, bool showGoButton){
+	int Gui::addArea(std::string name, sf::IntRect area, std::wstring text, std::string logo_pfad, std::string bild_pfad, float target_x, float target_y, float target_theta, std::string sprach_pfad, bool debugMsg, bool showGoButton, bool showWhiteArea){
 		poi newArea;
 		
 		newArea.area = area;
@@ -145,9 +152,14 @@ namespace lndw
 		newArea.area.top = newArea.area.top + offset_karte.y;
 		newArea.border = sf::RectangleShape( sf::Vector2f(newArea.area.width, newArea.area.height) );
 		newArea.border.setPosition(newArea.area.left, newArea.area.top);
-		newArea.border.setFillColor(sf::Color(0,0,0,0));
+		/*newArea.border.setFillColor(sf::Color(0,0,0,0));
 		newArea.border.setOutlineColor(sf::Color(0,0,0));
-		newArea.border.setOutlineThickness(-1);
+		newArea.border.setOutlineThickness(-1);*/
+		if (showWhiteArea) {
+			newArea.border.setFillColor(sf::Color(255,255,255));
+		} else {
+			newArea.border.setFillColor(sf::Color(0,0,0,0));
+		}
 		
 		newArea.showGoButton = showGoButton;
 		newArea.target.x = target_x;
@@ -184,6 +196,18 @@ namespace lndw
 	void Gui::setCurrentTargetReached() {
 		state.navigation_stopped = true;
 	}
+	
+	void Gui::setPersonPresent(bool isPresent) {
+	    state.personIsMaybePresent[state.nextField] = isPresent;
+	    state.nextField = (state.nextField < 24) ? state.nextField + 1 : 0;
+
+	    int count=0;
+	    for (int i=0; i<25; i++) if (state.personIsMaybePresent[i]) count++;
+
+	    state.personIsPresent = (count > 20);
+
+	    //std::cout << "lastMaybe: " << isPresent << " person is: " << state.personIsPresent << "\n";
+	}
 
 	int Gui::update(bool drawTargetArrowAndBorder, bool robotFollowsMouse, bool debugMsg) {
 		checkEvent();
@@ -205,8 +229,8 @@ namespace lndw
 	}
 
 	int Gui::sayHello(bool debugMsg) {
-		if ( state.moving || state.timer.getElapsedTime().asSeconds() > 13.0) {
-			std::cout << "Hello Again\n";
+		if ( state.personIsPresent && (state.timer.getElapsedTime().asSeconds() > 60.0 || state.moving)) {
+			//std::cout << "Hello Again\n";
 			state.speech.openFromFile(areas.begin()->speech);
 			state.speech.play();
 			state.timer.restart();
@@ -217,14 +241,14 @@ namespace lndw
 
 	int Gui::sayGoodbye(bool debugMsg) {
 		if ( state.moving ) {
-			std::cout << "New At Target\n";
+			//std::cout << "New At Target\n";
 			state.speech.openFromFile(state.next_speech);
 			state.timer.restart();
 			state.moving = false;
-		} else if ( state.timer.getElapsedTime().asSeconds() > 1.5 && !state.saidGoodbye) {
+		} else if ( state.timer.getElapsedTime().asSeconds() > 0.5 && !state.saidGoodbye) {
 			state.speech.play();
 			state.saidGoodbye = true;
-		} else if ( state.timer.getElapsedTime().asSeconds() > 7.0 ) {
+		} else if ( state.timer.getElapsedTime().asSeconds() > state.speech.getDuration().asSeconds() + 2.0 ) {
 			showArea(areas.begin(), debugMsg);
 			publishTarget();
 		}
@@ -319,7 +343,7 @@ namespace lndw
 		temp_bereich.top = text.getGlobalBounds().top + text.getGlobalBounds().height + 10;
 		temp_bereich.height = fin.getPosition().y - temp_bereich.top - 10;
 
-		fitIn(bild_bereich, &(area->texture_bild), &bild, debugMsg);
+		fitIn(temp_bereich, &(area->texture_bild), &bild, debugMsg);
 		goButton.show = area->showGoButton;
 		setTargetPose(area->target);
 		
@@ -371,11 +395,13 @@ namespace lndw
 	int Gui::draw(bool showTarget){
 		window.clear();
 		window.draw(background);
-		window.draw(karte);
+		//window.draw(karte);
+		window.draw(blaupause);
 		window.draw(bottom_line);
 		for(std::vector<poi>::iterator it=areas.begin(); it != areas.end(); it++) {
-			window.draw(it->logo);
+			
 			if (showTarget) window.draw(it->border);
+			window.draw(it->logo);
 		}
 
 		window.draw(robot.circle);
